@@ -12,8 +12,8 @@ from timer import Timer
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--train_path', type=str, default='data/MIT_split/train')
-    parser.add_argument('--test_path', type=str, default='data/MIT_split/test')
+    parser.add_argument('--train_path', type=str, default='../data/MIT_split/train')
+    parser.add_argument('--test_path', type=str, default='../data/MIT_split/test')
     parser.add_argument('--n_features', type=int, default=300)
     parser.add_argument('--n_clusters', type=int, default=128)
     parser.add_argument('--n_neighbors', type=int, default=5)
