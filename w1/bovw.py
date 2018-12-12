@@ -48,9 +48,13 @@ def main():
         with Timer('extract test descriptors'):
             test_descriptors = extract_descriptors(sift, test_filenames)
 
-        # Compute accuracy of the model.
-        accuracy.append(classifier(train_descriptors, train_labels, test_descriptors, test_labels,
-                                   args.n_clusters, args.n_neighbors, args.distance))
+        for k in process_arg(args.args.n_clusters):
+            for n in process_arg(args.n_neighbors):
+                # Compute accuracy of the model.
+                accuracy.append((
+                    nf, k, n,
+                    classifier(train_descriptors, train_labels, test_descriptors, test_labels, k, n, args.distance))
+                )
 
     print('accuracy:', accuracy)
 
