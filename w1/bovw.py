@@ -2,15 +2,15 @@ import argparse
 from itertools import product
 
 import cv2
+import numpy as np
 import pandas
 
-from utils.load_data import load_dataset
+from dense_sift import DenseSift
+from sift import sift_method
+from timer import Timer
 from utils.classifier import classifier
 from utils.extract_descriptors import extract_descriptors
-from timer import Timer
-import numpy as np
-from sift import sift_method
-from dense_sift import DenseSift
+from utils.load_data import load_dataset
 
 
 def parse_args():
@@ -22,7 +22,9 @@ def parse_args():
     parser.add_argument('--step_size', type=int, nargs='+', default=[16])
     parser.add_argument('--n_clusters', type=int, nargs='+', default=[128])
     parser.add_argument('--n_neighbors', type=int, nargs='+', default=[5])
-    parser.add_argument('--distance', type=str, nargs='+', default='euclidean')
+    parser.add_argument('--distance', type=str, nargs='+', default=['euclidean'], choices=[
+        'euclidean', 'chebyshev', 'manhattan'
+    ])
     return parser.parse_args()
 
 
@@ -36,8 +38,7 @@ def process_arg(argument):
     return arg_list
 
 
-def main():
-    args = parse_args()
+def main(args):
     results = []
 
     # Read the train and test files.
@@ -63,19 +64,18 @@ def main():
         with Timer('extract test descriptors'):
             test_descriptors = extract_descriptors(method, sift_instance, test_filenames)
 
-        for k, n in product(process_arg(args.n_clusters), process_arg(args.n_neighbors)):
+        for k, n, distance in product(process_arg(args.n_clusters), process_arg(args.n_neighbors), args.distance):
             # Compute accuracy of the model.
             with Timer('classify'):
                 results.append((
-                    method_name, nf, ss, k, n,
-                    classifier(train_descriptors, train_labels, test_descriptors, test_labels, k, n, args.distance))
+                    method_name, distance, nf, ss, k, n,
+                    classifier(train_descriptors, train_labels, test_descriptors, test_labels, k, n, distance))
                 )
 
-    data = pandas.DataFrame(results, columns=["method", "n_features", "step_size", "n_clusters", "n_neighbors",
-                                              "accuracy"])
-    print(data)
+    return pandas.DataFrame(results, columns=["method", "distance", "n_features", "step_size", "n_clusters",
+                                              "n_neighbors", "accuracy"])
 
 
 if __name__ == '__main__':
     with Timer('total time'):
-        main()
+        print(main(parse_args()))
