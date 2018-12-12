@@ -1,3 +1,5 @@
 opencv-contrib-python==3.4.2.17
 scikit-learn
 numpy
+matplotlib
+pandas
