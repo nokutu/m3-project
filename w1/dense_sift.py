@@ -1,12 +1,17 @@
 import cv2
 import numpy as np
 
-STEP_SIZE = 32
 
+class DenseSift:
 
-def dense_sift(sift, img: np.ndarray):
-    kp = [cv2.KeyPoint(x, y, STEP_SIZE) for y in range(0, img.shape[0], STEP_SIZE)
-          for x in range(0, img.shape[1], STEP_SIZE)]
-    _, descriptors = sift.compute(img, kp)
+    step_size: int
 
-    return descriptors
+    def __init__(self, step_size: int):
+        self.step_size = step_size
+
+    def dense_sift(self, sift, img: np.ndarray):
+        kp = [cv2.KeyPoint(x, y, self.step_size) for y in range(0, img.shape[0], self.step_size)
+              for x in range(0, img.shape[1], self.step_size)]
+        _, des = sift.compute(img, kp)
+
+        return des
