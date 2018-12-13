@@ -23,7 +23,7 @@ def experiment_1():
     Test different amounts of local features.
     """
     results = run_experiment(n_features=[100, 1000, 10])
-    plt.scatter(results['n_features'], results['accuracy'])
+    plt.plot(results['n_features'], results['accuracy'])
     plt.xlabel('n_features')
     plt.ylabel('accuracy')
     plt.show()
@@ -46,7 +46,7 @@ def experiment_3():
     Test different amounts of codebook sizes k.
     """
     results = run_experiment(n_clusters=[80, 170, 10])
-    plt.scatter(results['n_clusters'], results['accuracy'])
+    plt.plot(results['n_clusters'], results['accuracy'])
     plt.xlabel('n_clusters')
     plt.ylabel('accuracy')
     plt.show()
@@ -57,7 +57,7 @@ def experiment_4():
     Test different values of k for the k-nn classifier.
     """
     results = run_experiment(n_neighbors=[3, 21, 10])
-    plt.scatter(results['n_neighbors'], results['accuracy'])
+    plt.plot(results['n_neighbors'], results['accuracy'])
     plt.xlabel('n_neighbors')
     plt.ylabel('accuracy')
     plt.show()
@@ -75,9 +75,35 @@ def experiment_5():
     plt.show()
 
 
+def experiment_6():
+    results = run_experiment(method=['sift', 'dense_sift'], n_clusters=[80, 170, 10])
+    results_sift = results.loc[results['method'] == 'sift']
+    results_dense_sift = results.loc[results['method'] == 'dense_sift']
+    plt.plot(results_sift['n_clusters'], results_sift['accuracy'], label='sift')
+    plt.plot(results_dense_sift['n_clusters'], results_dense_sift['accuracy'], label='dense_sift')
+    plt.xlabel('n_clusters')
+    plt.ylabel('accuracy')
+    plt.legend()
+    plt.show()
+
+
+def experiment_7():
+    results = run_experiment(method=['sift', 'dense_sift'], n_neighbors=[3, 21, 10])
+    results_sift = results.loc[results['method'] == 'sift']
+    results_dense_sift = results.loc[results['method'] == 'dense_sift']
+    plt.plot(results_sift['n_neighbors'], results_sift['accuracy'], label='sift')
+    plt.plot(results_dense_sift['n_neighbors'], results_dense_sift['accuracy'], label='dense_sift')
+    plt.xlabel('n_neighbors')
+    plt.ylabel('accuracy')
+    plt.legend()
+    plt.show()
+
+
 if __name__ == '__main__':
-    experiment_1()
-    experiment_2()
-    experiment_3()
-    experiment_4()
-    experiment_5()
+    #experiment_1()
+    #experiment_2()
+    #experiment_3()
+    #experiment_4()
+    #experiment_5()
+    #experiment_6()
+    experiment_7()
