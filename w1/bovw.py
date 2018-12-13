@@ -1,16 +1,13 @@
 import argparse
 from itertools import product
 
-import cv2
 import numpy as np
 import pandas
 
-from dense_sift import DenseSift
-from sift import sift_method
-from timer import Timer
 from utils.classifier import classifier
-from utils.extract_descriptors import extract_descriptors
+from utils.extract_descriptors import SIFT, DenseSIFT
 from utils.load_data import load_dataset
+from utils.timer import Timer
 
 
 def parse_args():
@@ -46,31 +43,26 @@ def main(args):
     test_filenames, test_labels = load_dataset(args.test_path)
 
     for method_name, nf, ss in product(args.method, process_arg(args.n_features), process_arg(args.step_size)):
-        # Create a SIFT object detector and descriptor.
-        sift_instance = cv2.xfeatures2d.SIFT_create(nfeatures=nf)
-
         if method_name == 'sift':
-            method = sift_method
+            method = SIFT(n_features=nf)
         elif method_name == 'dense_sift':
-            method = DenseSift(ss).dense_sift
+            method = DenseSIFT(step_size=ss)
         else:
             raise Exception('Invalid method')
 
         # Compute the SIFT descriptors for all the train images.
         with Timer('extract train descriptors'):
-            train_descriptors = extract_descriptors(method, sift_instance, train_filenames)
+            train_descriptors = method.compute(train_filenames)
 
         # Compute the test descriptors.
         with Timer('extract test descriptors'):
-            test_descriptors = extract_descriptors(method, sift_instance, test_filenames)
+            test_descriptors = method.compute(test_filenames)
 
         for k, n, distance in product(process_arg(args.n_clusters), process_arg(args.n_neighbors), args.distance):
             # Compute accuracy of the model.
             with Timer('classify'):
-                results.append((
-                    method_name, distance, nf, ss, k, n,
-                    classifier(train_descriptors, train_labels, test_descriptors, test_labels, k, n, distance))
-                )
+                accuracy = classifier(train_descriptors, train_labels, test_descriptors, test_labels, k, n, distance)
+                results.append((method_name, distance, nf, ss, k, n, accuracy))
 
     return pandas.DataFrame(results, columns=["method", "distance", "n_features", "step_size", "n_clusters",
                                               "n_neighbors", "accuracy"])

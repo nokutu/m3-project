@@ -1,8 +1,6 @@
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.cluster import MiniBatchKMeans
 import numpy as np
-from timer import Timer
-from utils.extract_descriptors import extract_descriptors
+from sklearn.cluster import MiniBatchKMeans
+from sklearn.neighbors import KNeighborsClassifier
 
 
 def knn_classifier(n_neighbors, distance):
