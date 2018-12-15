@@ -4,9 +4,10 @@ from itertools import product
 import numpy as np
 import pandas
 
-from utils.classifier import classifier
-from utils.extract_descriptors import SIFT, DenseSIFT
 from utils.load_data import load_dataset
+from utils.extract_descriptors import SIFT, DenseSIFT
+from utils.classifier import Classifier
+from utils.metrics import plot_confusion_matrix
 from utils.timer import Timer
 
 
@@ -62,10 +63,16 @@ def run(args):
         for k, n, d in product(process_arg(args.n_clusters), process_arg(args.n_neighbors), args.distance):
             print('n_clusters: {}, n_neighbors: {}, distance: {}'.format(k, n, d))
 
-            # Compute accuracy of the model.
-            with Timer('classify'):
-                accuracy = classifier(train_descriptors, train_labels, test_descriptors, test_labels, k, n, d)
-                results.append((m, d, nf, ss, k, n, accuracy))
+            # Train the classifier and compute accuracy of the model.
+            classifier = Classifier(k, n, d)
+            with Timer('train'):
+                classifier.train(train_descriptors, train_labels)
+            with Timer('test'):
+                accuracy = classifier.test(test_descriptors, test_labels)
+            results.append((m, d, nf, ss, k, n, accuracy))
+
+            # Plot confusion matrix.
+            plot_confusion_matrix(test_labels, classifier.predict(test_descriptors))
 
     return pandas.DataFrame(results, columns=["method", "distance", "n_features", "step_size", "n_clusters",
                                               "n_neighbors", "accuracy"])

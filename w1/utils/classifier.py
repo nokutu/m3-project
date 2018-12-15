@@ -25,28 +25,39 @@ def cluster(x, n_clusters):
     return kmeans
 
 
-def classifier(train_descriptors, train_labels, test_descriptors, test_labels, k, n, d):
-    # Compute a k-means clustering on the descriptor space.
-    codebook = cluster(np.vstack(train_descriptors), k)
+class Classifier:
+    def __init__(self, k, n, d):
+        self.k = k
+        self._clf = knn_classifier(n, d)
+        self._codebook = None
 
-    # For each train image, project each keypoint descriptor to its closest visual word.
-    # Each image is represented by the frequency of each visual word.
-    train_visual_words = np.empty((len(train_descriptors), k), dtype=np.float32)
-    for i, des in enumerate(train_descriptors):
-        words = codebook.predict(des)
-        train_visual_words[i, :] = np.bincount(words, minlength=k)
+    def _aggregate(self, descriptors):
+        # For each train image, project each keypoint descriptor to its closest visual word.
+        # Each image is represented by the frequency of each visual word.
+        visual_words = np.empty((len(descriptors), self.k), dtype=np.float32)
+        for i, des in enumerate(descriptors):
+            words = self._codebook.predict(des)
+            visual_words[i, :] = np.bincount(words, minlength=self.k)
+        return visual_words
 
-    # Build a k-nn classifier and train it with the train descriptors.
-    clf = knn_classifier(n, d)
-    clf.fit(train_visual_words, train_labels)
+    def train(self, train_descriptors, train_labels):
+        # Compute a k-means clustering on the descriptor space.
+        self._codebook = cluster(np.vstack(train_descriptors), self.k)
+        # Compute the train visual words.
+        train_visual_words = self._aggregate(train_descriptors)
+        # Build a k-nn classifier and train it with the train descriptors.
+        self._clf.fit(train_visual_words, train_labels)
 
+    def predict(self, test_descriptors):
+        # Compute the test visual words.
+        test_visual_words = self._aggregate(test_descriptors)
+        # Predict the class labels for the test data.
+        predicted = self._clf.predict(test_visual_words)
+        return predicted
 
-    # Compute the test visual words.
-    test_visual_words = np.empty((len(test_descriptors), k), dtype=np.float32)
-    for i, des in enumerate(test_descriptors):
-        words = codebook.predict(des)
-        test_visual_words[i, :] = np.bincount(words, minlength=k)
-
-    # Compute accuracy of the model.
-    accuracy = clf.score(test_visual_words, test_labels)
-    return accuracy
+    def test(self, test_descriptors, test_labels):
+        # Compute the test visual words.
+        test_visual_words = self._aggregate(test_descriptors)
+        # Compute accuracy of the model.
+        accuracy = self._clf.score(test_visual_words, test_labels)
+        return accuracy
