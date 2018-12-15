@@ -1,4 +1,5 @@
 import numpy as np
+from sklearn.preprocessing import normalize
 from sklearn.cluster import MiniBatchKMeans
 from sklearn.neighbors import KNeighborsClassifier
 
@@ -37,7 +38,9 @@ class Classifier:
         visual_words = np.empty((len(descriptors), self.k), dtype=np.float32)
         for i, des in enumerate(descriptors):
             words = self._codebook.predict(des)
-            visual_words[i, :] = np.bincount(words, minlength=self.k)
+            histogram = np.bincount(words, minlength=self.k)
+            histogram = normalize(histogram.reshape(1, -1), norm='l2')  # normalize histogram
+            visual_words[i, :] = histogram
         return visual_words
 
     def train(self, train_descriptors, train_labels):
