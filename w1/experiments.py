@@ -15,7 +15,8 @@ def run_experiment(method=('sift',), n_features=(300,), step_size=(16,), n_clust
                      step_size=step_size,
                      n_clusters=n_clusters,
                      n_neighbors=n_neighbors,
-                     distance=distance)
+                     distance=distance,
+                     confusion_matrix=False)
     return run(args)
 
 
@@ -38,6 +39,7 @@ def experiment_2():
     x = np.arange(2)
     plt.bar(x, results['accuracy'])
     plt.xticks(x, results['method'])
+    plt.xlabel('method')
     plt.ylabel('accuracy')
     plt.show()
 
@@ -72,6 +74,7 @@ def experiment_5():
     x = np.arange(3)
     plt.bar(x, results['accuracy'])
     plt.xticks(x, results['distance'])
+    plt.xlabel('distance')
     plt.ylabel('accuracy')
     plt.show()
 
@@ -84,7 +87,7 @@ def experiment_6():
     plt.plot(results_dense_sift['n_clusters'], results_dense_sift['accuracy'], label='dense_sift')
     plt.xlabel('n_clusters')
     plt.ylabel('accuracy')
-    plt.legend()
+    plt.legend(loc='best')
     plt.show()
 
 
@@ -96,7 +99,21 @@ def experiment_7():
     plt.plot(results_dense_sift['n_neighbors'], results_dense_sift['accuracy'], label='dense_sift')
     plt.xlabel('n_neighbors')
     plt.ylabel('accuracy')
-    plt.legend()
+    plt.legend(loc='best')
+    plt.show()
+
+
+def experiment_8():
+    results = run_experiment(method=['sift', 'dense_sift'], distance=['euclidean', 'manhattan', 'chebyshev'])
+    results_sift = results.loc[results['method'] == 'sift']
+    results_dense_sift = results.loc[results['method'] == 'dense_sift']
+    x = np.arange(3)
+    plt.bar(x-0.1, results_sift['accuracy'], width=0.2, align='center', label='sift')
+    plt.bar(x+0.1, results_dense_sift['accuracy'], width=0.2, align='center', label='dense_sift')
+    plt.xticks(x, ['euclidean', 'manhattan', 'chebyshev'])
+    plt.xlabel('distance')
+    plt.ylabel('accuracy')
+    plt.legend(loc='best')
     plt.show()
 
 
@@ -107,4 +124,5 @@ if __name__ == '__main__':
     #experiment_4()
     #experiment_5()
     #experiment_6()
-    experiment_7()
+    #experiment_7()
+    experiment_8()

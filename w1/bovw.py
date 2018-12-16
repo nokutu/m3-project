@@ -23,6 +23,7 @@ def parse_args():
     parser.add_argument('--distance', type=str, nargs='+', default=['euclidean'], choices=[
         'euclidean', 'manhattan', 'chebyshev'
     ])
+    parser.add_argument('--confusion_matrix', action='store_true')
     return parser.parse_args()
 
 
@@ -71,8 +72,9 @@ def run(args):
                 accuracy = classifier.test(test_descriptors, test_labels)
             results.append((m, d, nf, ss, k, n, accuracy))
 
-            # Plot confusion matrix.
-            plot_confusion_matrix(test_labels, classifier.predict(test_descriptors))
+            # Optionally plot confusion matrix.
+            if args.confusion_matrix:
+                plot_confusion_matrix(test_labels, classifier.predict(test_descriptors))
 
     return pandas.DataFrame(results, columns=["method", "distance", "n_features", "step_size", "n_clusters",
                                               "n_neighbors", "accuracy"])
