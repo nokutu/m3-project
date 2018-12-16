@@ -6,7 +6,8 @@ from matplotlib import pyplot as plt
 from bovw import run
 
 
-def run_experiment(method=['sift'], n_features=[300], step_size=[16], n_clusters=[128], n_neighbors=[5], distance=['euclidean']):
+def run_experiment(method=('sift',), n_features=(300,), step_size=(16,), n_clusters=(128,), n_neighbors=(5,), distance=(
+'euclidean',)):
     args = Namespace(train_path='../data/MIT_split/train',
                      test_path='../data/MIT_split/test',
                      method=method,
