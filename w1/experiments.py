@@ -6,8 +6,8 @@ from matplotlib import pyplot as plt
 from bovw import run
 
 
-def run_experiment(method=('sift',), n_features=(300,), step_size=(16,), n_clusters=(128,), n_neighbors=(5,), distance=(
-'euclidean',)):
+def run_experiment(method=('sift',), n_features=(300,), step_size=(16,), n_clusters=(128,), n_neighbors=(5,),
+                   distance=('euclidean',), confusion_matrix=False):
     args = Namespace(train_path='../data/MIT_split/train',
                      test_path='../data/MIT_split/test',
                      method=method,
@@ -16,7 +16,7 @@ def run_experiment(method=('sift',), n_features=(300,), step_size=(16,), n_clust
                      n_clusters=n_clusters,
                      n_neighbors=n_neighbors,
                      distance=distance,
-                     confusion_matrix=False)
+                     confusion_matrix=confusion_matrix)
     return run(args)
 
 
@@ -125,4 +125,7 @@ if __name__ == '__main__':
     #experiment_5()
     #experiment_6()
     #experiment_7()
-    experiment_8()
+    #experiment_8()
+
+    results = run_experiment(method=['dense_sift'], n_clusters=[240], n_neighbors=[7], distance=['euclidean'], confusion_matrix=True)
+    print(results)
