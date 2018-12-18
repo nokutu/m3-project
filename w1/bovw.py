@@ -4,9 +4,10 @@ from itertools import product
 import numpy as np
 import pandas
 
-from utils.classifier import classifier
-from utils.extract_descriptors import SIFT, DenseSIFT
 from utils.load_data import load_dataset
+from utils.extract_descriptors import SIFT, DenseSIFT
+from utils.classifier import Classifier
+from utils.metrics import plot_confusion_matrix
 from utils.timer import Timer
 
 
@@ -20,8 +21,9 @@ def parse_args():
     parser.add_argument('--n_clusters', type=int, nargs='+', default=[128])
     parser.add_argument('--n_neighbors', type=int, nargs='+', default=[5])
     parser.add_argument('--distance', type=str, nargs='+', default=['euclidean'], choices=[
-        'euclidean', 'chebyshev', 'manhattan'
+        'euclidean', 'manhattan', 'chebyshev'
     ])
+    parser.add_argument('--confusion_matrix', action='store_true')
     return parser.parse_args()
 
 
@@ -35,17 +37,18 @@ def process_arg(argument):
     return arg_list
 
 
-def main(args):
-    results = []
-
+def run(args):
     # Read the train and test files.
     train_filenames, train_labels = load_dataset(args.train_path)
     test_filenames, test_labels = load_dataset(args.test_path)
 
-    for method_name, nf, ss in product(args.method, process_arg(args.n_features), process_arg(args.step_size)):
-        if method_name == 'sift':
+    results = []
+    for m, nf, ss in product(args.method, process_arg(args.n_features), process_arg(args.step_size)):
+        print('method: {}, n_features: {}, step_size: {}'.format(m, nf, ss))
+
+        if m == 'sift':
             method = SIFT(n_features=nf)
-        elif method_name == 'dense_sift':
+        elif m == 'dense_sift':
             method = DenseSIFT(step_size=ss)
         else:
             raise Exception('Invalid method')
@@ -58,11 +61,20 @@ def main(args):
         with Timer('extract test descriptors'):
             test_descriptors = method.compute(test_filenames)
 
-        for k, n, distance in product(process_arg(args.n_clusters), process_arg(args.n_neighbors), args.distance):
-            # Compute accuracy of the model.
-            with Timer('classify'):
-                accuracy = classifier(train_descriptors, train_labels, test_descriptors, test_labels, k, n, distance)
-                results.append((method_name, distance, nf, ss, k, n, accuracy))
+        for k, n, d in product(process_arg(args.n_clusters), process_arg(args.n_neighbors), args.distance):
+            print('n_clusters: {}, n_neighbors: {}, distance: {}'.format(k, n, d))
+
+            # Train the classifier and compute accuracy of the model.
+            classifier = Classifier(k, n, d)
+            with Timer('train'):
+                classifier.train(train_descriptors, train_labels)
+            with Timer('test'):
+                accuracy = classifier.test(test_descriptors, test_labels)
+            results.append((m, d, nf, ss, k, n, accuracy))
+
+            # Optionally plot confusion matrix.
+            if args.confusion_matrix:
+                plot_confusion_matrix(test_labels, classifier.predict(test_descriptors))
 
     return pandas.DataFrame(results, columns=["method", "distance", "n_features", "step_size", "n_clusters",
                                               "n_neighbors", "accuracy"])
@@ -70,4 +82,5 @@ def main(args):
 
 if __name__ == '__main__':
     with Timer('total time'):
-        print(main(parse_args()))
+        results = run(parse_args())
+        print(results)
