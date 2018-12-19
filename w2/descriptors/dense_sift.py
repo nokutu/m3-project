@@ -1,11 +1,12 @@
 import cv2
 import random
 from typing import List
+import numpy as np
 
 
 class DenseSIFT:
 
-    def __init__(self, step_size: int):
+    def __init__(self, step_size: int = 16):
         self._sift = cv2.xfeatures2d.SIFT_create()
         self._step_size = step_size
 
@@ -20,7 +21,7 @@ class DenseSIFT:
 
         return [_worker(filename) for filename in filenames]
 
-    def _compute(self, img):
+    def _compute(self, img: np.ndarray):
         kps = []
         for x in range(0, img.shape[1], self._step_size):
             for y in range(0, img.shape[0], self._step_size):
@@ -28,7 +29,8 @@ class DenseSIFT:
                 kp = cv2.KeyPoint(x, y, size)
                 kps.append(kp)
         _, des = self._sift.compute(img, kps)
-        return des
+
+        return Picture(img.shape, kps, des)
 
 
 _images = dict()  # cache images

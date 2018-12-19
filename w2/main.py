@@ -1,7 +1,10 @@
 import argparse
 import numpy as np
 from sklearn.model_selection import GridSearchCV
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 
+from descriptors.dense_sift import DenseSIFT
 from w2.classifier import Classifier
 from w2.utils.load_data import load_dataset
 from w2.utils.timer import Timer
@@ -15,21 +18,27 @@ def parse_args():
 
 
 def main(args):
-    d = {
-        'n_neighbors': np.linspace(5, 100, 20)
+    parameters = {
+        'classifier__n_neighbors': np.linspace(5, 100, 20)
     }
 
-    cv = GridSearchCV(Classifier(), d, cv=5, n_jobs=4, verbose=2)
+    pipeline = Pipeline(steps=[
+        ("cluster",),
+        ("scaler", StandardScaler()),
+        ("classifier", Classifier())
+    ])
+
+    cv = GridSearchCV(Classifier(), parameters, cv=5, n_jobs=-1, verbose=2)
 
     # Read the train and test files.
     train_filenames, train_labels = load_dataset(args.train_path)
     test_filenames, test_labels = load_dataset(args.test_path)
 
-    sift = DenseSIFT
+    sift = DenseSIFT(128)
     with Timer('Extracting fit train descriptors'):
-        train_descriptors = self.sift.compute(train_filenames)
+        train_descriptors = sift.compute(train_filenames)
     with Timer('Extracting fit test descriptors'):
-        test_descriptors = self.sift.compute(test_filenames)
+        test_descriptors = sift.compute(test_filenames)
     cv.fit(train_descriptors, train_labels)
 
     c = Classifier()
