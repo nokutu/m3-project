@@ -19,7 +19,8 @@ class Classifier(BaseEstimator, ClassifierMixin):
                  n_neighbors=16,
                  normalization="L2",
                  distance="euclidean",
-                 classifier="knn"):
+                 classifier="knn",
+                 ):
 
         self.kernel = kernel
         self.n_clusters = n_clusters
@@ -28,6 +29,7 @@ class Classifier(BaseEstimator, ClassifierMixin):
         self.normalization = normalization
         self.distance = distance
         self.classifier = classifier
+
 
         self.clf = None
         self.scaler = None
@@ -45,9 +47,7 @@ class Classifier(BaseEstimator, ClassifierMixin):
         self.cluster.fit(np.vstack(train_descriptors))
 
         train_visual_words = np.empty((len(train_descriptors), self.n_clusters), dtype=np.float32)
-        for i, des in enumerate(train_descriptors):
-            words = self.cluster.predict(des)
-            train_visual_words[i, :] = np.bincount(words, minlength=self.n_clusters)
+        # TO DO words with pyramid
 
         self.clf.fit(train_visual_words, labels)
 
@@ -61,17 +61,6 @@ class Classifier(BaseEstimator, ClassifierMixin):
 
     def score(self, test_descriptors: np.ndarray, labels=None, sample_weight=None):
         return self.clf.score(self.predict(test_descriptors), labels)
-
-    @staticmethod
-    def get_cluster(n_clusters: int):
-        return MiniBatchKMeans(
-            n_clusters=n_clusters,
-            verbose=False,
-            batch_size=n_clusters * 20,
-            compute_labels=False,
-            reassignment_ratio=10 ** -4,
-            random_state=42
-        )
 
     @staticmethod
     def get_knn_classifier(n_neighbors, distance):

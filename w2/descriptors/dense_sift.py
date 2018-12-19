@@ -1,6 +1,7 @@
 import cv2
 import random
 from typing import List
+from ..model.picture import Picture
 
 
 class DenseSIFT:
@@ -28,7 +29,7 @@ class DenseSIFT:
                 kp = cv2.KeyPoint(x, y, size)
                 kps.append(kp)
         _, des = self._sift.compute(img, kps)
-        return des
+        return Picture(img.shape, kps, des)
 
 
 _images = dict()  # cache images
