@@ -19,13 +19,11 @@ class SpatialPyramid(BaseEstimator, ClusterMixin):
 
         self.cluster = None
 
-    def fit(self):
-        self.cluster = SpatialPyramid.get_cluster(self.n_clusters)
+    def fit(self, pictures, y=None):
+        return self._compute(pictures)
 
-        pass
-
-    def predict(self):
-        pass
+    def predict(self, pictures, y=None):
+        return self._compute(pictures)
 
     def _compute(self, pictures: List[Picture]):
         i = 0
