@@ -26,26 +26,29 @@ class SpatialPyramid(BaseEstimator, ClusterMixin):
         return self._compute(pictures)
 
     def _compute(self, pictures: List[Picture]):
-        i = 0
         s = 0
         for i in range(1, self.levels + 1):
             s += i ** 2
-        train_visual_words = np.empty((len(pictures), self.n_clusters*s), dtype=np.float32)
-        for level in range(1, self.levels+1):
-            a = self._descriptor_sets(level, pictures)
 
-            for des_set in a:
-                for des in des_set:
-                    words = self.cluster.predict(des)
-                    train_visual_words[i, :] = np.bincount(words, minlength=self.n_clusters)
-                    i += 1
+        train_visual_words = np.empty((len(pictures), self.n_clusters * s), dtype=np.float32)
+
+        for i, picture in enumerate(pictures):
+            words = self.cluster.predict(picture.descriptors)
+            pos = 0
+
+            for level in range(1, self.levels + 1):
+                word_sets = self._descriptor_sets(level, pictures, words)
+
+                for word_set in word_sets:
+                    train_visual_words[i, pos:pos + self.n_clusters] = np.bincount(word_set, minlength=self.n_clusters)
+                    pos += self.n_clusters
 
         return train_visual_words
 
     @staticmethod
-    def _descriptor_sets(level, pictures):
+    def _descriptor_sets(level, pictures, words):
         if level == 1:
-            return list(map(lambda picture: picture.descriptor, pictures))
+            return words
         else:
             res = [[] for _ in range(level ** 2)]
 
@@ -53,10 +56,10 @@ class SpatialPyramid(BaseEstimator, ClusterMixin):
                 width_step = picture.size[0] / level
                 height_step = picture.size[1] / level
 
-                for des, kp in zip(picture.descriptors, picture.keypoints):
+                for word, kp in zip(words, picture.keypoints):
                     w = kp[0] // width_step
                     h = kp[1] // height_step
-                    res[w*level + h].append(des)
+                    res[w * level + h].append(word)
 
             return res
 
