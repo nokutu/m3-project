@@ -2,6 +2,7 @@ import cv2
 import random
 from typing import List
 import numpy as np
+from functional import seq
 
 from sklearn.base import BaseEstimator, ClusterMixin
 from sklearn.cluster import MiniBatchKMeans
@@ -20,17 +21,18 @@ class SpatialPyramid(BaseEstimator, ClusterMixin):
         self.cluster = None
 
     def fit(self, pictures, y=None):
+        self.cluster = SpatialPyramid.get_cluster(self.n_clusters)
+        self.cluster.fit(np.vstack(seq(pictures).map(lambda p: p.descriptors).to_list()))
+
         return self._compute(pictures)
 
-    def predict(self, pictures, y=None):
+    def transform(self, pictures, y=None):
         return self._compute(pictures)
 
     def _compute(self, pictures: List[Picture]):
-        s = 0
-        for i in range(1, self.levels + 1):
-            s += i ** 2
+        blocks = seq.range(1, self.levels+1).map(lambda l: l**2).sum()
 
-        train_visual_words = np.empty((len(pictures), self.n_clusters * s), dtype=np.float32)
+        train_visual_words = np.empty((len(pictures), blocks, self.n_clusters), dtype=np.float32)
 
         for i, picture in enumerate(pictures):
             words = self.cluster.predict(picture.descriptors)
@@ -40,15 +42,15 @@ class SpatialPyramid(BaseEstimator, ClusterMixin):
                 word_sets = self._descriptor_sets(level, pictures, words)
 
                 for word_set in word_sets:
-                    train_visual_words[i, pos:pos + self.n_clusters] = np.bincount(word_set, minlength=self.n_clusters)
-                    pos += self.n_clusters
+                    train_visual_words[i, pos, :] = np.bincount(word_set, minlength=self.n_clusters)
+                    pos += 1
 
         return train_visual_words
 
     @staticmethod
     def _descriptor_sets(level, pictures, words):
         if level == 1:
-            return words
+            return [words]
         else:
             res = [[] for _ in range(level ** 2)]
 

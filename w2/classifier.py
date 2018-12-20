@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 import numpy as np
 from sklearn.base import BaseEstimator, ClassifierMixin
@@ -7,7 +7,7 @@ from sklearn.svm import SVC
 
 
 class Classifier(BaseEstimator, ClassifierMixin):
-    clf: SVC | KNeighborsClassifier
+    clf: Union[SVC, KNeighborsClassifier]
 
     def __init__(self,
                  kernel="rbf",
@@ -24,7 +24,6 @@ class Classifier(BaseEstimator, ClassifierMixin):
         self.classifier = classifier
         self.n_neighbors = n_neighbors
 
-
         self.clf = None
 
     def fit(self, x: np.ndarray, labels: List[str]):
@@ -36,7 +35,6 @@ class Classifier(BaseEstimator, ClassifierMixin):
             raise TypeError('Invalid classifier, must be svm or knn')
 
         self.clf.fit(x, labels)
-
 
     def predict(self, x: np.ndarray, y=None):
         return self.clf.predict(x)

@@ -5,6 +5,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
 
 from descriptors.dense_sift import DenseSIFT
+from descriptors.spatial_pyramid import SpatialPyramid
 from w2.classifier import Classifier
 from w2.utils.load_data import load_dataset
 from w2.utils.timer import Timer
@@ -19,16 +20,16 @@ def parse_args():
 
 def main(args):
     parameters = {
-        'classifier__n_neighbors': np.linspace(5, 100, 20)
+        #'classifier__n_neighbors': np.linspace(5, 100, 20)
     }
 
     pipeline = Pipeline(steps=[
-        ("cluster",),
-        ("scaler", StandardScaler()),
+        ("cluster", SpatialPyramid()),
+        #("scaler", StandardScaler()),
         ("classifier", Classifier())
     ])
 
-    cv = GridSearchCV(Classifier(), parameters, cv=5, n_jobs=-1, verbose=2)
+    cv = GridSearchCV(pipeline, parameters, cv=3, verbose=2)
 
     # Read the train and test files.
     train_filenames, train_labels = load_dataset(args.train_path)
@@ -39,16 +40,16 @@ def main(args):
         train_descriptors = sift.compute(train_filenames)
     with Timer('Extracting fit test descriptors'):
         test_descriptors = sift.compute(test_filenames)
+
     cv.fit(train_descriptors, train_labels)
 
-    c = Classifier()
-    c.fit(train_filenames, train_labels)
+    # c = Classifier()
+    # c.fit(train_filenames, train_labels)
 
     # TODO print scores
-    # print(c.score(test_filenames, test_labels))
-    scores = cv.grid_scores_
+    print(cv.grid_scores_)
 
-    cv.score(test_filenames, test_labels)
+    print(cv.score(test_descriptors, test_labels))
 
 
 if __name__ == '__main__':

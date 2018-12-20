@@ -2,7 +2,8 @@ import cv2
 import random
 from typing import List
 import numpy as np
-from ..model.picture import Picture
+
+from model.picture import Picture
 
 
 class DenseSIFT:
