@@ -1,14 +1,15 @@
 import argparse
+
 import numpy as np
-from sklearn.model_selection import GridSearchCV
-from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import GridSearchCV
+from sklearn.svm import SVC
+from sklearn.pipeline import make_pipeline
 
 from descriptors.dense_sift import DenseSIFT
-from descriptors.spatial_pyramid import SpatialPyramid
-from w2.classifier import Classifier
-from w2.utils.load_data import load_dataset
-from w2.utils.timer import Timer
+from descriptors.visual_words import SpatialPyramid
+from utils.load_data import load_dataset
+from utils.timer import Timer
 
 
 def parse_args():
@@ -19,38 +20,37 @@ def parse_args():
 
 
 def main(args):
-    parameters = {
-        #'classifier__n_neighbors': np.linspace(5, 100, 20)
-    }
-
-    pipeline = Pipeline(steps=[
-        ("cluster", SpatialPyramid()),
-        #("scaler", StandardScaler()),
-        ("classifier", Classifier())
-    ])
-
-    cv = GridSearchCV(pipeline, parameters, cv=3, verbose=2)
-
     # Read the train and test files.
     train_filenames, train_labels = load_dataset(args.train_path)
     test_filenames, test_labels = load_dataset(args.test_path)
 
-    sift = DenseSIFT(128)
-    with Timer('Extracting fit train descriptors'):
+    # Compute the Dense SIFT descriptors for all the train and test images.
+    sift = DenseSIFT(step_size=16)
+    with Timer('Extract train descriptors'):
         train_descriptors = sift.compute(train_filenames)
-    with Timer('Extracting fit test descriptors'):
+    with Timer('Extract test descriptors'):
         test_descriptors = sift.compute(test_filenames)
 
-    cv.fit(train_descriptors, train_labels)
+    # Create processing pipeline and run cross-validation.
+    transformer = SpatialPyramid(levels=1)
+    scaler = StandardScaler()
+    classifier = SVC(C=1, kernel='rbf', gamma=.002)
 
-    # c = Classifier()
-    # c.fit(train_filenames, train_labels)
+    pipeline = make_pipeline(transformer, scaler, classifier)
+    param_grid = {}
+    cv = GridSearchCV(pipeline, param_grid, n_jobs=-1, cv=3, refit=True, verbose=2)
+
+    with Timer('train'):
+        cv.fit(train_descriptors, train_labels)
+
+    with Timer('test'):
+        accuracy = cv.score(test_descriptors, test_labels)
 
     # TODO print scores
-    print(cv.grid_scores_)
+    print(cv.cv_results_)
 
-    print(cv.score(test_descriptors, test_labels))
+    print('accuracy: {}'.format(accuracy))
 
 
 if __name__ == '__main__':
-    print(main(parse_args()))
+    main(parse_args())
