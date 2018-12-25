@@ -1,3 +1,4 @@
+import random
 from typing import List
 
 import numpy as np
@@ -7,31 +8,29 @@ from sklearn.cluster import MiniBatchKMeans
 from sklearn.preprocessing import normalize
 
 from model.picture import Picture
-from utils.timer import Timer
 
 
 class BoWTransformer(BaseEstimator, TransformerMixin):
 
-    def __init__(self, n_clusters: int = 512, norm: str = "l2"):
+    def __init__(self, n_clusters: int = 512, norm: str = 'l2'):
         self.n_clusters = n_clusters
         self.norm = norm
 
         self._codebook = None
 
     def fit(self, pictures: List[Picture], y=None):
-        with Timer('fit'):
-            self._codebook = MiniBatchKMeans(
-                n_clusters=self.n_clusters,
-                verbose=False,
-                batch_size=self.n_clusters * 3,
-                compute_labels=False,
-                reassignment_ratio=10 ** -4,
-                random_state=42)
+        self._codebook = MiniBatchKMeans(
+            n_clusters=self.n_clusters,
+            verbose=False,
+            batch_size=self.n_clusters * 3,
+            compute_labels=False,
+            reassignment_ratio=10 ** -4,
+            random_state=42)
 
-            descriptors = [p.descriptors for p in pictures]
-            # descriptors = random.sample(descriptors, int(len(descriptors)/2))
-            self._codebook.fit(np.vstack(descriptors))
-            return self
+        descriptors = [p.descriptors for p in pictures]
+        descriptors = random.sample(descriptors, min(len(descriptors), 10000))
+        self._codebook.fit(np.vstack(descriptors))
+        return self
 
     def transform(self, pictures: List[Picture]):
         descriptors = [p.descriptors for p in pictures]
@@ -44,10 +43,7 @@ class BoWTransformer(BaseEstimator, TransformerMixin):
         return visual_words
 
     def _normalize(self, x: np.ndarray):
-        if self.norm:
-            return normalize(x.reshape(1, -1), norm=self.norm)
-        else:
-            return x.reshape(1, -1)
+        return normalize(x.reshape(1, -1), norm=self.norm).ravel()
 
 
 class SpatialPyramid(BoWTransformer):
@@ -57,19 +53,18 @@ class SpatialPyramid(BoWTransformer):
         self.levels = levels
 
     def transform(self, pictures: List[Picture]):
-        with Timer('Transform'):
-            blocks = seq.range(1, self.levels + 1).map(lambda l: l ** 2).sum()
-            visual_words = np.empty((len(pictures), blocks * self.n_clusters), dtype=np.float32)
-            for i, picture in enumerate(pictures):
-                words = self._codebook.predict(picture.descriptors)
-                pos = 0
-                for level in range(1, self.levels + 1):
-                    word_sets = self._descriptor_sets(level, picture, words)
-                    for word_set in word_sets:
-                        histogram = np.bincount(word_set, minlength=self.n_clusters)
-                        visual_words[i, pos:pos + self.n_clusters] = self._normalize(histogram)
-                        pos += self.n_clusters
-            return visual_words
+        blocks = seq.range(1, self.levels + 1).map(lambda l: l ** 2).sum()
+        visual_words = np.empty((len(pictures), blocks * self.n_clusters), dtype=np.float32)
+        for i, picture in enumerate(pictures):
+            words = self._codebook.predict(picture.descriptors)
+            pos = 0
+            for level in range(1, self.levels + 1):
+                word_sets = self._descriptor_sets(level, picture, words)
+                for word_set in word_sets:
+                    histogram = np.bincount(word_set, minlength=self.n_clusters)
+                    visual_words[i, pos:pos + self.n_clusters] = self._normalize(histogram)
+                    pos += self.n_clusters
+        return visual_words
 
     @staticmethod
     def _descriptor_sets(level: int, picture: Picture, words: np.ndarray):
