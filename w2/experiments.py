@@ -13,7 +13,7 @@ def run_experiment(param_grid: dict):
 
 def experiment_1():
     """
-    Test different amounts of local features.
+    Test different kernels and penalty parameter of the error term "C" for the classifier.
     """
     param_grid = {
         'classifier__kernel': ['linear', 'rbf', 'sigmoid'],
@@ -29,7 +29,7 @@ def experiment_1():
 
 def experiment_2():
     """
-    Test different amounts of local features.
+    Test different kernels and kernel coefficients for the classifier.
     """
     param_grid = {
         'classifier__kernel': ['linear', 'rbf', 'sigmoid'],
@@ -45,7 +45,8 @@ def experiment_2():
 
 def experiment_3():
     """
-    Test different amounts of local features.
+    Test the classifier using different amounts of samples randomly selected form the descriptors,
+    which were obtained using dense_sift with different scale factors.
     """
     param_grid = {
         'transformer__samples': np.linspace(10000, 100000, 5),
@@ -60,7 +61,7 @@ def experiment_3():
 
 def experiment_4():
     """
-    Test different amounts of local features.
+    Test different normalization for the descriptors.
     """
     param_grid = {
         'transformer__norm': ["l1", "l2", "power"],
@@ -75,7 +76,8 @@ def experiment_4():
 
 def experiment_5():
     """
-    Test different amounts of local features.
+    Test different number of levels for the spatial pyramid that takes into account the location of the
+    descriptors to generate a general image descriptor.
     """
     param_grid = {
         'transformer__levels': np.linspace(1, 3, 3),
@@ -90,7 +92,7 @@ def experiment_5():
 
 def experiment_6():
     """
-    Test different amounts of local features.
+    Test different number of clusters, multiples of 2, for the min_batch k-means.
     """
     param_grid = {
         'transformer__n_cluster': np.logspace(8, 11, 4, base=2),
