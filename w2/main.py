@@ -61,7 +61,7 @@ def main(args, param_grid=None):
 
     cachedir = mkdtemp()
     memory = Memory(location=cachedir, verbose=1)
-    pipeline = Pipeline(memory=memory,
+    pipeline = Pipeline(memory=None,
                         steps=[('transformer', transformer), ('scaler', scaler), ('classifier', classifier)])
 
     cv = GridSearchCV(pipeline, param_grid, n_jobs=-1, cv=3, refit=True, verbose=2)
