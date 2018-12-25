@@ -52,7 +52,7 @@ def main(args, param_grid=None):
     pipeline = Pipeline(memory=None,
                         steps=[('transformer', transformer), ('scaler', scaler), ('classifier', classifier)])
 
-    cv = GridSearchCV(pipeline, param_grid, n_jobs=1, cv=3, refit=True, verbose=2)
+    cv = GridSearchCV(pipeline, param_grid, n_jobs=1, cv=3, refit=True, verbose=2, return_train_score=True)
 
     with Timer('Train'):
         cv.fit(train_descriptors, train_labels)
