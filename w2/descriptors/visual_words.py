@@ -8,7 +8,6 @@ from sklearn.cluster import MiniBatchKMeans
 from sklearn.preprocessing import normalize
 
 from model.picture import Picture
-from model.picture_set import PictureSet
 
 
 class BoWTransformer(BaseEstimator, TransformerMixin):
@@ -19,7 +18,7 @@ class BoWTransformer(BaseEstimator, TransformerMixin):
 
         self._codebook = None
 
-    def fit(self, picture_set: PictureSet, y=None):
+    def fit(self, pictures: List[Picture], y=None):
         self._codebook = MiniBatchKMeans(
             n_clusters=self.n_clusters,
             verbose=False,
@@ -28,13 +27,13 @@ class BoWTransformer(BaseEstimator, TransformerMixin):
             reassignment_ratio=10 ** -4,
             random_state=42)
 
-        descriptors = np.vstack([p.descriptors for p in picture_set.pictures])
+        descriptors = np.vstack([p.descriptors for p in pictures])
         descriptors = descriptors[np.random.choice(descriptors.shape[0], 10000, replace=False), :]
         self._codebook.fit(descriptors)
         return self
 
-    def transform(self, picture_set: PictureSet):
-        descriptors = [p.descriptors for p in picture_set.pictures]
+    def transform(self, pictures: List[Picture]):
+        descriptors = [p.descriptors for p in pictures]
         visual_words = np.empty((len(descriptors), self.n_clusters), dtype=np.float32)
         for i, des in enumerate(descriptors):
             words = self._codebook.predict(des)
@@ -53,10 +52,10 @@ class SpatialPyramid(BoWTransformer):
         super().__init__(n_clusters)
         self.levels = levels
 
-    def transform(self, picture_set: PictureSet):
+    def transform(self, pictures: List[Picture]):
         blocks = seq.range(1, self.levels + 1).map(lambda l: l ** 2).sum()
-        visual_words = np.empty((len(picture_set.pictures), blocks * self.n_clusters), dtype=np.float32)
-        for i, picture in enumerate(picture_set.pictures):
+        visual_words = np.empty((len(pictures), blocks * self.n_clusters), dtype=np.float32)
+        for i, picture in enumerate(pictures):
             words = self._codebook.predict(picture.descriptors)
             pos = 0
             for level in range(1, self.levels + 1):

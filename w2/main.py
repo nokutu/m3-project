@@ -14,7 +14,6 @@ from sklearn.svm import SVC
 from descriptors.histogram_intersection_kernel import histogram_intersection_kernel
 from descriptors.dense_sift import DenseSIFT
 from descriptors.visual_words import SpatialPyramid
-from model.picture_set import PictureSet
 from utils.load_data import load_dataset
 from utils.timer import Timer
 
@@ -50,10 +49,10 @@ def main(args, param_grid=None):
     # Compute the Dense SIFT descriptors for all the train and test images.
     with Timer('Extract train descriptors'):
         train_cache_path = os.path.join(args.cache_path, 'train')
-        train_descriptors = PictureSet(_load_or_compute(train_filenames, train_cache_path))
+        train_descriptors = _load_or_compute(train_filenames, train_cache_path)
     with Timer('Extract test descriptors'):
         test_cache_path = os.path.join(args.cache_path, 'test')
-        test_descriptors = PictureSet(_load_or_compute(test_filenames, test_cache_path))
+        test_descriptors = _load_or_compute(test_filenames, test_cache_path)
 
     # Create processing pipeline and run cross-validation.
     transformer = SpatialPyramid(levels=2)
@@ -65,7 +64,7 @@ def main(args, param_grid=None):
     pipeline = Pipeline(memory=None,
                         steps=[('transformer', transformer), ('scaler', scaler), ('classifier', classifier)])
 
-    cv = GridSearchCV(pipeline, param_grid, n_jobs=-1, cv=3, refit=True, verbose=2)
+    cv = GridSearchCV(pipeline, param_grid, n_jobs=1, cv=3, refit=True, verbose=2)
 
     with Timer('Train'):
         cv.fit(train_descriptors, train_labels)
@@ -84,4 +83,4 @@ def main(args, param_grid=None):
 
 
 if __name__ == '__main__':
-    main(_parse_args())
+    print(main(_parse_args()))
