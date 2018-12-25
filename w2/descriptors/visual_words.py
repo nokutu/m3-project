@@ -29,7 +29,7 @@ class BoWTransformer(BaseEstimator, TransformerMixin):
 
         descriptors = np.vstack([p.descriptors for p in picture_set.pictures])
         descriptors = descriptors[np.random.choice(descriptors.shape[0], self.n_samples, replace=False), :]
-        self._codebook.fit(np.vstack(descriptors))
+        self._codebook.fit(descriptors)
         return self
 
     def transform(self, picture_set: PictureSet):
