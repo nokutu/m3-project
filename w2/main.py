@@ -1,10 +1,12 @@
 import argparse
+from shutil import rmtree
+from tempfile import mkdtemp
 
-import numpy as np
-from sklearn.preprocessing import StandardScaler
+from joblib import Memory
 from sklearn.model_selection import GridSearchCV
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
-from sklearn.pipeline import make_pipeline
 
 from descriptors.dense_sift import DenseSIFT
 from descriptors.visual_words import SpatialPyramid
@@ -36,9 +38,12 @@ def main(args):
     scaler = StandardScaler()
     classifier = SVC(C=1, kernel='rbf', gamma=.002)
 
-    pipeline = make_pipeline(transformer, scaler, classifier)
+    cachedir = mkdtemp()
+    memory = Memory(location=cachedir, verbose=0)
+    pipeline = Pipeline(memory=None,
+                        steps=[('transformer', transformer), ('scaler', scaler), ('classifier', classifier)])
     param_grid = {}
-    cv = GridSearchCV(pipeline, param_grid, n_jobs=-1, cv=3, refit=True, verbose=2)
+    cv = GridSearchCV(pipeline, param_grid, n_jobs=1, cv=3, refit=True, verbose=2)
 
     with Timer('train'):
         cv.fit(train_descriptors, train_labels)
@@ -50,6 +55,8 @@ def main(args):
     print(cv.cv_results_)
 
     print('accuracy: {}'.format(accuracy))
+
+    rmtree(cachedir)
 
 
 if __name__ == '__main__':
