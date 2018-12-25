@@ -1,6 +1,3 @@
-import random
-from typing import List
-
 import numpy as np
 from functional import seq
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -13,11 +10,13 @@ from model.picture_set import PictureSet
 
 class BoWTransformer(BaseEstimator, TransformerMixin):
 
-    def __init__(self, n_clusters: int = 512, norm: str = 'l2'):
+    def __init__(self, n_clusters: int = 512, n_samples: int = 10000, norm: str = 'l2'):
         self.n_clusters = n_clusters
+        self.n_samples = n_samples
         self.norm = norm
 
         self._codebook = None
+        np.random.seed(42)
 
     def fit(self, picture_set: PictureSet, y=None):
         self._codebook = MiniBatchKMeans(
@@ -29,8 +28,8 @@ class BoWTransformer(BaseEstimator, TransformerMixin):
             random_state=42)
 
         descriptors = np.vstack([p.descriptors for p in picture_set.pictures])
-        descriptors = descriptors[np.random.choice(descriptors.shape[0], 10000, replace=False), :]
-        self._codebook.fit(descriptors)
+        descriptors = descriptors[np.random.choice(descriptors.shape[0], self.n_samples, replace=False), :]
+        self._codebook.fit(np.vstack(descriptors))
         return self
 
     def transform(self, picture_set: PictureSet):
@@ -49,8 +48,8 @@ class BoWTransformer(BaseEstimator, TransformerMixin):
 
 class SpatialPyramid(BoWTransformer):
 
-    def __init__(self, n_clusters: int = 512, levels: int = 2):
-        super().__init__(n_clusters)
+    def __init__(self, n_clusters: int = 512, n_samples: int = 10000, norm: str = 'l2', levels: int = 2):
+        super().__init__(n_clusters, n_samples, norm)
         self.levels = levels
 
     def transform(self, picture_set: PictureSet):
