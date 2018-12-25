@@ -52,7 +52,7 @@ class BoWTransformer(BaseEstimator, TransformerMixin):
 
 class SpatialPyramid(BoWTransformer):
 
-    def __init__(self, n_clusters: int = 512, levels: int = 1):
+    def __init__(self, n_clusters: int = 512, levels: int = 2):
         super().__init__(n_clusters)
         self.levels = levels
 

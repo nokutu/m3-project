@@ -16,7 +16,6 @@ class DenseSIFT:
         self._images = dict()  # cache images
 
     def compute(self, filenames: List[str]):
-
         def _worker(filename):
             if filename not in self._images:
                 self._images[filename] = cv2.imread(filename, cv2.IMREAD_GRAYSCALE)
