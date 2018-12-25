@@ -1,5 +1,6 @@
 import os
 import argparse
+import pandas
 from shutil import rmtree
 from tempfile import mkdtemp
 
@@ -67,10 +68,10 @@ def main(args, param_grid=None):
     cv = GridSearchCV(pipeline, param_grid, n_jobs=-1, cv=3, refit=True, verbose=2)
 
     with Timer('Train'):
-        pipeline.fit(train_descriptors, train_labels)
+        cv.fit(train_descriptors, train_labels)
 
     with Timer('Test'):
-        accuracy = pipeline.score(test_descriptors, test_labels)
+        accuracy = cv.score(test_descriptors, test_labels)
 
     # TODO print scores
     # print(cv.cv_results_)
@@ -78,6 +79,8 @@ def main(args, param_grid=None):
     print('Accuracy: {}'.format(accuracy))
 
     rmtree(cachedir)
+
+    return pandas.DataFrame.from_dict(cv.cv_results_)
 
 
 if __name__ == '__main__':
