@@ -4,7 +4,6 @@ import numpy as np
 from functional import seq
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.cluster import MiniBatchKMeans
-from sklearn.preprocessing import normalize
 
 from model.picture import Picture
 
@@ -43,19 +42,32 @@ class BoWTransformer(BaseEstimator, TransformerMixin):
             visual_words[i, :] = histogram
         return visual_words
 
-    def _normalize(self, x: np.ndarray):
-        return normalize(x.reshape(1, -1), norm=self.norm).ravel()
+    def _normalize(self, x: np.ndarray, alpha: float = 0.5):
+        if self.norm == 'l1':
+            norm = np.linalg.norm(x, ord=1)
+            x_norm = x / norm
+        elif self.norm == 'l2':
+            norm = np.linalg.norm(x, ord=2)
+            x_norm = x / norm
+        elif self.norm == 'power':
+            # https://www.robots.ox.ac.uk/~vgg/rg/papers/peronnin_etal_ECCV10.pdf
+            x = np.sign(x) * np.abs(x) ** alpha
+            norm = np.linalg.norm(x, ord=2)
+            x_norm = x / norm
+        else:
+            raise ValueError("'{}' is not a supported norm".format(self.norm))
+        return x_norm
 
 
 class SpatialPyramid(BoWTransformer):
 
-    def __init__(self, n_clusters: int = 32, n_samples: int = 10000, norm: str = 'l2', levels: int = 2):
+    def __init__(self, n_clusters: int = 512, n_samples: int = 10000, norm: str = 'l2', levels: int = 2):
         super().__init__(n_clusters, n_samples, norm)
         self.levels = levels
 
     def transform(self, pictures: List[Picture]):
-        blocks = seq.range(1, self.levels + 1).map(lambda l: l ** 2).sum()
-        visual_words = np.empty((len(pictures), blocks * self.n_clusters), dtype=np.float32)
+        n_blocks = seq.range(1, self.levels + 1).map(lambda l: l ** 2).sum()
+        visual_words = np.empty((len(pictures), n_blocks * self.n_clusters), dtype=np.float32)
         for i, picture in enumerate(pictures):
             words = self._codebook.predict(picture.descriptors)
             pos = 0

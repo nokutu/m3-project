@@ -2,17 +2,17 @@ import argparse
 from shutil import rmtree
 from tempfile import mkdtemp
 
-import pandas
 from joblib import Memory
-from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
+from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
+import pandas
 
-from descriptors.dense_sift import DenseSIFT
-from descriptors.histogram_intersection_kernel import histogram_intersection_kernel
-from descriptors.visual_words import SpatialPyramid
 from utils.load_data import load_dataset
+from descriptors.dense_sift import DenseSIFT
+from descriptors.visual_words import SpatialPyramid
+from descriptors.histogram_intersection_kernel import histogram_intersection_kernel
 from utils.timer import Timer
 
 
@@ -32,15 +32,12 @@ def main(args, param_grid=None):
     train_filenames, train_labels = load_dataset(args.train_path)
     test_filenames, test_labels = load_dataset(args.test_path)
 
-    memory = Memory(location=args.cache_path, mmap_mode='r')
-
     # Compute the Dense SIFT descriptors for all the train and test images.
-    sift = DenseSIFT(step_size=16)
-    sift_compute = memory.cache(sift.compute)
+    sift = DenseSIFT(step_size=16, memory=args.cache_path)
     with Timer('Extract train descriptors'):
-        train_descriptors = sift_compute(train_filenames)
+        train_descriptors = sift.compute(train_filenames)
     with Timer('Extract test descriptors'):
-        test_descriptors = sift_compute(test_filenames)
+        test_descriptors = sift.compute(test_filenames)
 
     # Create processing pipeline and run cross-validation.
     transformer = SpatialPyramid(levels=2)
@@ -52,7 +49,7 @@ def main(args, param_grid=None):
     pipeline = Pipeline(memory=None,
                         steps=[('transformer', transformer), ('scaler', scaler), ('classifier', classifier)])
 
-    cv = GridSearchCV(pipeline, param_grid, n_jobs=1, cv=3, refit=True, verbose=2, return_train_score=True)
+    cv = GridSearchCV(pipeline, param_grid, n_jobs=-1, cv=3, refit=True, verbose=2, return_train_score=True)
 
     with Timer('Train'):
         cv.fit(train_descriptors, train_labels)
