@@ -1,6 +1,7 @@
 import os
 from typing import List
 import multiprocessing.dummy as mp
+import hashlib
 import pickle
 
 import cv2
@@ -66,5 +67,8 @@ class DenseSIFT:
                 return descriptors
 
     def _cache_file(self, filenames):
-        h = format(hash((filenames, self.step_size)), 'x')
-        return os.path.join(self.memory, '{}.pkl'.format(h))
+        h = hashlib.md5()
+        for filename in filenames:
+            h.update(filename.encode('utf-8'))
+        h.update(str(self.step_size).encode('utf-8'))
+        return os.path.join(self.memory, '{}.pkl'.format(h.hexdigest()))
