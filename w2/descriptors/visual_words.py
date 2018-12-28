@@ -10,7 +10,7 @@ from model.picture import Picture
 
 class BoWTransformer(BaseEstimator, TransformerMixin):
 
-    def __init__(self, n_clusters: int = 512, n_samples: int = 10000, norm: str = 'l2'):
+    def __init__(self, n_clusters: int = 500, n_samples: int = 10000, norm: str = 'l2'):
         self.n_clusters = n_clusters
         self.n_samples = n_samples
         self.norm = norm
@@ -61,34 +61,36 @@ class BoWTransformer(BaseEstimator, TransformerMixin):
 
 class SpatialPyramid(BoWTransformer):
 
-    def __init__(self, n_clusters: int = 512, n_samples: int = 10000, norm: str = 'l2', levels: int = 2):
+    def __init__(self, n_clusters: int = 500, n_samples: int = 10000, norm: str = 'l2', levels: int = 2):
         super().__init__(n_clusters, n_samples, norm)
         self.levels = levels
 
+        #print('{}: {}'.format(self.__class__.__name__, vars(self)))
+
     def transform(self, pictures: List[Picture]):
-        n_blocks = seq.range(1, self.levels + 1).map(lambda l: l ** 2).sum()
+        n_blocks = seq.range(self.levels).map(lambda l: 4 ** l).sum()
         visual_words = np.empty((len(pictures), n_blocks * self.n_clusters), dtype=np.float32)
         for i, picture in enumerate(pictures):
             words = self._codebook.predict(picture.descriptors)
-            pos = 0
-            for level in range(1, self.levels + 1):
-                word_sets = self._descriptor_sets(level, picture, words)
-                for word_set in word_sets:
-                    histogram = np.bincount(word_set, minlength=self.n_clusters)
-                    visual_words[i, pos:pos + self.n_clusters] = self._normalize(histogram)
-                    pos += self.n_clusters
+            j = 0
+            for l in range(self.levels):
+                word_sets = self._descriptor_sets(l, picture)
+                w = 1 / 2 ** (self.levels - l)  # descriptors at finer resolutions are weighted more
+                for inds in word_sets:
+                    histogram = np.bincount(words[inds], minlength=self.n_clusters)
+                    histogram = self._normalize(histogram) * w
+                    visual_words[i, j:j + self.n_clusters] = histogram
+                    j += self.n_clusters
         return visual_words
 
     @staticmethod
-    def _descriptor_sets(level: int, picture: Picture, words: np.ndarray):
-        if level == 1:
-            return [words]
-        else:
-            block_h = picture.size[0] / level
-            block_w = picture.size[1] / level
-            word_sets = [[] for _ in range(level ** 2)]
-            for kp, word in zip(picture.keypoints, words):
-                i = int(kp[1] / block_h)
-                j = int(kp[0] / block_w)
-                word_sets[i * level + j].append(word)
-            return word_sets
+    def _descriptor_sets(level: int, picture: Picture):
+        h, w = picture.size
+        block_h = h / 2 ** level
+        block_w = w / 2 ** level
+        word_sets = [[] for _ in range(4 ** level)]
+        for idx, kp in enumerate(picture.keypoints):
+            i = int(np.floor(kp[1] / block_h))
+            j = int(np.floor(kp[0] / block_w))
+            word_sets[i * (2 ** level) + j].append(idx)
+        return word_sets
