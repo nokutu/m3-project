@@ -1,10 +1,7 @@
 import argparse
-from shutil import rmtree
-from tempfile import mkdtemp
 
-from joblib import Memory
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC
 import pandas
@@ -42,14 +39,12 @@ def main(args, param_grid=None):
     # Create processing pipeline and run cross-validation.
     transformer = SpatialPyramid(levels=2)
     scaler = StandardScaler()
-    classifier = SVC(C=1, kernel=histogram_intersection_kernel, gamma=.002)
+    classifier = SVC(C=1, kernel=histogram_intersection_kernel, gamma=.001)
 
-    cachedir = mkdtemp()
-    memory = Memory(location=cachedir)
     pipeline = Pipeline(memory=None,
                         steps=[('transformer', transformer), ('scaler', scaler), ('classifier', classifier)])
 
-    cv = GridSearchCV(pipeline, param_grid, n_jobs=-1, cv=3, refit=True, verbose=2, return_train_score=True)
+    cv = RandomizedSearchCV(pipeline, param_grid, n_jobs=-1, cv=3, refit=True, verbose=2, return_train_score=True)
 
     with Timer('Train'):
         cv.fit(train_descriptors, train_labels)
@@ -57,9 +52,6 @@ def main(args, param_grid=None):
     with Timer('Test'):
         accuracy = cv.score(test_descriptors, test_labels)
     print('Accuracy: {}'.format(accuracy))
-
-    # Cleanup
-    rmtree(cachedir)
 
     return pandas.DataFrame.from_dict(cv.cv_results_)
 
