@@ -1,6 +1,7 @@
 import argparse
 from tempfile import mkdtemp
 
+from functional import seq
 from joblib import Memory
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
@@ -12,6 +13,7 @@ from utils.load_data import load_dataset
 from descriptors.dense_sift import DenseSIFT
 from descriptors.visual_words import SpatialPyramid
 from utils.timer import Timer
+import numpy as np
 
 
 def _parse_args():
@@ -33,9 +35,12 @@ def main(args, param_grid=None):
     # Compute the Dense SIFT descriptors for all the train and test images.
     sift = DenseSIFT(step_size=16, memory=args.cache_path)
     with Timer('Extract train descriptors'):
-        train_descriptors = sift.compute(train_filenames)
+        train_pictures = sift.compute(train_filenames)
     with Timer('Extract test descriptors'):
-        test_descriptors = sift.compute(test_filenames)
+        test_pictures = sift.compute(test_filenames)
+
+    train_data = np.array(seq(train_pictures).map(lambda p: p.to_array()).to_list())
+    test_data = np.array(seq(test_pictures).map(lambda p: p.to_array()).to_list())
 
     # Create processing pipeline and run cross-validation.
     transformer = SpatialPyramid(levels=2)
@@ -50,13 +55,13 @@ def main(args, param_grid=None):
     le = LabelEncoder()
     le.fit(train_labels)
 
-    cv = GridSearchCV(pipeline, param_grid, n_jobs=1, cv=3, refit=True, verbose=2, return_train_score=True)
+    cv = GridSearchCV(pipeline, param_grid, n_jobs=-1, cv=3, refit=True, verbose=11, return_train_score=True)
 
     with Timer('Train'):
-        cv.fit(train_descriptors, le.transform(train_labels))
+        cv.fit(train_data, le.transform(train_labels))
 
     with Timer('Test'):
-        accuracy = cv.score(test_descriptors, le.transform(test_labels))
+        accuracy = cv.score(test_data, le.transform(test_labels))
     print('Accuracy: {}'.format(accuracy))
 
     return pandas.DataFrame.from_dict(cv.cv_results_)

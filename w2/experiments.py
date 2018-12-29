@@ -19,11 +19,11 @@ def experiment_1():
     """
     param_grid = {
         'classifier__kernel': ['linear', 'rbf', 'sigmoid', histogram_intersection_kernel],
-        'classifier__C': np.logspace(-4, 4, 3),
+        'classifier__C': np.logspace(-4, 4, 9),
     }
 
     results = run_experiment(param_grid)
-    print(results)
+
     # plt.plot(results['n_features'], results['accuracy'])
     # plt.xlabel('n_features')
     # plt.ylabel('accuracy')
