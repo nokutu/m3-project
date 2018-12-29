@@ -1,5 +1,5 @@
 import os
-from typing import List
+from typing import List, Tuple
 import multiprocessing.dummy as mp
 import hashlib
 import pickle
@@ -12,13 +12,15 @@ from model.picture import Picture
 
 class DenseSIFT:
 
-    def __init__(self, step_size: int = 2, memory: str = None):
+    def __init__(self, step_size: int = 10, scales: Tuple[int] = (4, 8, 12, 16), memory: str = None):
         self.step_size = step_size
-        self.scales = [1, 3, 5, 7, 9]
+        self.scales = scales
         self.memory = memory
 
         self._sift = cv2.xfeatures2d.SIFT_create()
         self._images = dict()  # cache images
+
+        #print('{}: {}'.format(self.__class__.__name__, vars(self)))
 
     def compute(self, filenames: List[str]):
         # Try to load descriptors from cache
@@ -56,6 +58,7 @@ class DenseSIFT:
             cache_file = self._cache_file(filenames)
             os.makedirs(self.memory, exist_ok=True)
             with open(cache_file, 'wb') as f:
+                # https://stackoverflow.com/questions/31468117/python-3-can-pickle-handle-byte-objects-larger-than-4gb
                 pickle.dump(descriptors, f)
 
     def _load(self, filenames):
@@ -68,7 +71,9 @@ class DenseSIFT:
 
     def _cache_file(self, filenames):
         h = hashlib.md5()
+        h.update(str(self.step_size).encode('utf-8'))
+        for scale in self.scales:
+            h.update(str(scale).encode('utf-8'))
         for filename in filenames:
             h.update(filename.encode('utf-8'))
-        h.update(str(self.step_size).encode('utf-8'))
         return os.path.join(self.memory, '{}.pkl'.format(h.hexdigest()))

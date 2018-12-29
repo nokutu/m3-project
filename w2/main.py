@@ -1,13 +1,12 @@
 import argparse
-from shutil import rmtree
 from tempfile import mkdtemp
 
 from joblib import Memory
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-from sklearn.svm import SVC
 import pandas
+from sklearn.svm import SVC
 
 from utils.load_data import load_dataset
 from descriptors.dense_sift import DenseSIFT
@@ -59,9 +58,6 @@ def main(args, param_grid=None):
     with Timer('Test'):
         accuracy = cv.score(test_descriptors, le.transform(test_labels))
     print('Accuracy: {}'.format(accuracy))
-
-    # Cleanup
-    rmtree(cachedir)
 
     return pandas.DataFrame.from_dict(cv.cv_results_)
 
