@@ -2,12 +2,14 @@ from argparse import Namespace
 import numpy as np
 from matplotlib import pyplot as plt
 
+from descriptors.histogram_intersection_kernel import histogram_intersection_kernel
 from main import main
 
 
 def run_experiment(param_grid: dict):
     args = Namespace(train_path='../data/MIT_split/train',
-                     test_path='../data/MIT_split/test')
+                     test_path='../data/MIT_split/test',
+                     cache_path='../data/cache')
     return main(args, param_grid)
 
 
@@ -16,15 +18,16 @@ def experiment_1():
     Test different kernels and penalty parameter of the error term "C" for the classifier.
     """
     param_grid = {
-        'classifier__kernel': ['linear', 'rbf', 'sigmoid'],
-        'classifier__C': np.logspace(-4, 4, 9),
+        'classifier__kernel': ['linear', 'rbf', 'sigmoid', histogram_intersection_kernel],
+        'classifier__C': np.logspace(-4, 4, 3),
     }
 
     results = run_experiment(param_grid)
-    plt.plot(results['n_features'], results['accuracy'])
-    plt.xlabel('n_features')
-    plt.ylabel('accuracy')
-    plt.show()
+    print(results)
+    # plt.plot(results['n_features'], results['accuracy'])
+    # plt.xlabel('n_features')
+    # plt.ylabel('accuracy')
+    # plt.show()
 
 
 def experiment_2():

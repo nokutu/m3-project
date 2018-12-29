@@ -4,6 +4,8 @@ import cv2
 from functional import seq
 import numpy as np
 
+from joblib import hash
+
 
 class Picture:
 
@@ -15,3 +17,6 @@ class Picture:
         self.size = size
         self.keypoints = seq(kps).map(lambda k: k.pt).to_list()
         self.descriptors = des
+
+    def __repr__(self):
+        return 'Picture(desc: ' + hash(self.descriptors) + ')'

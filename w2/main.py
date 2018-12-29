@@ -5,14 +5,13 @@ from tempfile import mkdtemp
 from joblib import Memory
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.svm import SVC
 import pandas
 
 from utils.load_data import load_dataset
 from descriptors.dense_sift import DenseSIFT
 from descriptors.visual_words import SpatialPyramid
-from descriptors.histogram_intersection_kernel import histogram_intersection_kernel
 from utils.timer import Timer
 
 
@@ -42,20 +41,23 @@ def main(args, param_grid=None):
     # Create processing pipeline and run cross-validation.
     transformer = SpatialPyramid(levels=2)
     scaler = StandardScaler()
-    classifier = SVC(C=1, kernel=histogram_intersection_kernel, gamma=.002)
+    classifier = SVC(C=1, gamma=.002)
 
     cachedir = mkdtemp()
-    memory = Memory(location=cachedir)
-    pipeline = Pipeline(memory=None,
+    memory = Memory(location=cachedir, verbose=1)
+    pipeline = Pipeline(memory=memory,
                         steps=[('transformer', transformer), ('scaler', scaler), ('classifier', classifier)])
 
-    cv = GridSearchCV(pipeline, param_grid, n_jobs=-1, cv=3, refit=True, verbose=2, return_train_score=True)
+    le = LabelEncoder()
+    le.fit(train_labels)
+
+    cv = GridSearchCV(pipeline, param_grid, n_jobs=1, cv=3, refit=True, verbose=2, return_train_score=True)
 
     with Timer('Train'):
-        cv.fit(train_descriptors, train_labels)
+        cv.fit(train_descriptors, le.transform(train_labels))
 
     with Timer('Test'):
-        accuracy = cv.score(test_descriptors, test_labels)
+        accuracy = cv.score(test_descriptors, le.transform(test_labels))
     print('Accuracy: {}'.format(accuracy))
 
     # Cleanup
