@@ -22,7 +22,7 @@ class DenseSIFT:
 
         #print('{}: {}'.format(self.__class__.__name__, vars(self)))
 
-    def compute(self, filenames: List[str]):
+    def compute(self, filenames: List[str]) -> List[Picture]:
         # Try to load descriptors from cache
         descriptors = self._load(filenames)
         if descriptors is not None:
@@ -42,7 +42,7 @@ class DenseSIFT:
 
         return descriptors
 
-    def _compute(self, img: np.ndarray):
+    def _compute(self, img: np.ndarray) -> Picture:
         kps = []
         for x in range(0, img.shape[1], self.step_size):
             for y in range(0, img.shape[0], self.step_size):
