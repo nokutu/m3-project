@@ -1,4 +1,5 @@
 from argparse import Namespace
+
 import numpy as np
 from matplotlib import pyplot as plt
 
@@ -23,20 +24,11 @@ def experiment_1():
     }
 
     results = run_experiment(param_grid)
+    results.loc[results.param_classifier__kernel == histogram_intersection_kernel, 'param_classifier__kernel'] = \
+        "histogram_intersection"
 
-    results[results.param_classifier__kernel == 'linear'].plot.line(x='param_classifier__C', y='mean_test_score',
-                                                                    label='Linear kernel')
-
-    results[results.param_classifier__kernel == 'rbf'].plot.line(x='param_classifier__C', y='mean_test_score',
-                                                                 label='RBF kernel')
-
-    results[results.param_classifier__kernel == 'sigmoid'].plot.line(x='param_classifier__C', y='mean_test_score',
-                                                                     label='Sigmoid kernel')
-
-    results[results.param_classifier__kernel == histogram_intersection_kernel] \
-        .plot.line(x='param_classifier__C',
-                   y='mean_test_score',
-                   label='Histogram intersection kernel')
+    results.pivot(index='param_classifier__C', columns='param_classifier__kernel', values='mean_test_score') \
+        .plot.line(logx=True)
 
     plt.xlabel('C')
     plt.ylabel('accuracy')
@@ -53,20 +45,11 @@ def experiment_2():
     }
 
     results = run_experiment(param_grid)
+    results.loc[results.param_classifier__kernel == histogram_intersection_kernel, 'param_classifier__kernel'] = \
+        "histogram_intersection"
 
-    results[results.param_classifier__kernel == 'linear'].plot.line(x='param_classifier__gamma', y='mean_test_score',
-                                                                    label='Linear kernel')
-
-    results[results.param_classifier__kernel == 'rbf'].plot.line(x='param_classifier__gamma', y='mean_test_score',
-                                                                 label='RBF kernel')
-
-    results[results.param_classifier__kernel == 'sigmoid'].plot.line(x='param_classifier__gamma', y='mean_test_score',
-                                                                     label='Sigmoid kernel')
-
-    results[results.param_classifier__kernel == histogram_intersection_kernel] \
-        .plot.line(x='param_classifier__gamma',
-                   y='mean_test_score',
-                   label='Histogram intersection kernel')
+    results.pivot(index='param_classifier__gamma', columns='param_classifier__kernel', values='mean_test_score') \
+        .plot.line(logx=True)
 
     plt.xlabel('gamma')
     plt.ylabel('accuracy')
