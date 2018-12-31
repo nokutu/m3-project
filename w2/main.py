@@ -1,26 +1,25 @@
 import argparse
-from tempfile import mkdtemp
 
+import numpy as np
+import pandas
 from functional import seq
 from joblib import Memory
-from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
+from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, LabelEncoder
-import pandas
 from sklearn.svm import SVC
 
-from utils.load_data import load_dataset
 from descriptors.dense_sift import DenseSIFT
 from descriptors.visual_words import SpatialPyramid
+from utils.load_data import load_dataset
 from utils.timer import Timer
-import numpy as np
 
 
 def _parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--train_path', type=str, default='../data/MIT_split/train')
     parser.add_argument('--test_path', type=str, default='../data/MIT_split/test')
-    parser.add_argument('--cache_path', type=str, default='../data/cache')
+    parser.add_argument('--cache_path', type=str, default='../.cache')
     return parser.parse_args()
 
 
@@ -47,15 +46,14 @@ def main(args, param_grid=None):
     scaler = StandardScaler()
     classifier = SVC(C=1, gamma=.002)
 
-    cachedir = mkdtemp()
-    memory = Memory(location=cachedir, verbose=1)
+    memory = Memory(location=args.cache_path, verbose=1)
     pipeline = Pipeline(memory=memory,
                         steps=[('transformer', transformer), ('scaler', scaler), ('classifier', classifier)])
 
     le = LabelEncoder()
     le.fit(train_labels)
 
-    cv = GridSearchCV(pipeline, param_grid, n_jobs=-1, cv=3, refit=True, verbose=11, return_train_score=True)
+    cv = GridSearchCV(pipeline, param_grid, n_jobs=1, cv=3, refit=True, verbose=11, return_train_score=True)
 
     with Timer('Train'):
         cv.fit(train_data, le.transform(train_labels))

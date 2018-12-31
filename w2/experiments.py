@@ -24,10 +24,23 @@ def experiment_1():
 
     results = run_experiment(param_grid)
 
-    # plt.plot(results['n_features'], results['accuracy'])
-    # plt.xlabel('n_features')
-    # plt.ylabel('accuracy')
-    # plt.show()
+    results[results.param_classifier__kernel == 'linear'].plot.line(x='param_classifier__C', y='mean_test_score',
+                                                                    label='Linear kernel')
+
+    results[results.param_classifier__kernel == 'rbf'].plot.line(x='param_classifier__C', y='mean_test_score',
+                                                                 label='RBF kernel')
+
+    results[results.param_classifier__kernel == 'sigmoid'].plot.line(x='param_classifier__C', y='mean_test_score',
+                                                                     label='Sigmoid kernel')
+
+    results[results.param_classifier__kernel == histogram_intersection_kernel] \
+        .plot.line(x='param_classifier__C',
+                   y='mean_test_score',
+                   label='Histogram intersection kernel')
+
+    plt.xlabel('C')
+    plt.ylabel('accuracy')
+    plt.show()
 
 
 def experiment_2():
@@ -35,14 +48,30 @@ def experiment_2():
     Test different kernels and kernel coefficients for the classifier.
     """
     param_grid = {
-        'classifier__kernel': ['linear', 'rbf', 'sigmoid'],
+        'classifier__kernel': ['linear', 'rbf', 'sigmoid', histogram_intersection_kernel],
         'classifier__gamma': np.logspace(-4, 4, 9)
     }
 
     results = run_experiment(param_grid)
-    plt.plot(results['n_features'], results['accuracy'])
-    plt.xlabel('n_features')
+
+    results[results.param_classifier__kernel == 'linear'].plot.line(x='param_classifier__gamma', y='mean_test_score',
+                                                                    label='Linear kernel')
+
+    results[results.param_classifier__kernel == 'rbf'].plot.line(x='param_classifier__gamma', y='mean_test_score',
+                                                                 label='RBF kernel')
+
+    results[results.param_classifier__kernel == 'sigmoid'].plot.line(x='param_classifier__gamma', y='mean_test_score',
+                                                                     label='Sigmoid kernel')
+
+    results[results.param_classifier__kernel == histogram_intersection_kernel] \
+        .plot.line(x='param_classifier__gamma',
+                   y='mean_test_score',
+                   label='Histogram intersection kernel')
+
+    plt.xlabel('gamma')
     plt.ylabel('accuracy')
+    plt.legend(loc='best')
+
     plt.show()
 
 
@@ -56,8 +85,12 @@ def experiment_3():
     }
 
     results = run_experiment(param_grid)
-    plt.plot(results['n_features'], results['accuracy'])
-    plt.xlabel('n_features')
+
+    results.plot.line(x='param_transformer__samples', y='mean_test_score')
+
+    plt.plot(results.param_transformer__samples, results.mean_test_score)
+
+    plt.xlabel('samples')
     plt.ylabel('accuracy')
     plt.show()
 
@@ -67,12 +100,15 @@ def experiment_4():
     Test different normalization for the descriptors.
     """
     param_grid = {
-        'transformer__norm': ["l1", "l2", "power"],
+        'transformer__norm': ['l1', 'l2', 'power'],
     }
 
     results = run_experiment(param_grid)
-    plt.plot(results['n_features'], results['accuracy'])
-    plt.xlabel('n_features')
+
+    # Colormap needed until a bug is fixed in next version of pandas.
+    results.plot.bar(x='param_transformer__norm', y='mean_test_score', colormap='jet')
+
+    plt.xlabel('norm')
     plt.ylabel('accuracy')
     plt.show()
 
@@ -87,8 +123,11 @@ def experiment_5():
     }
 
     results = run_experiment(param_grid)
-    plt.plot(results['n_features'], results['accuracy'])
-    plt.xlabel('n_features')
+
+    # Colormap needed until a bug is fixed in next version of pandas.
+    results.plot.bar(x='param_transformer__levels', y='mean_test_score', colormap='jet')
+
+    plt.xlabel('levels')
     plt.ylabel('accuracy')
     plt.show()
 
@@ -98,12 +137,14 @@ def experiment_6():
     Test different number of clusters, multiples of 2, for the min_batch k-means.
     """
     param_grid = {
-        'transformer__n_cluster': np.logspace(8, 11, 4, base=2),
+        'transformer__n_cluster': np.logspace(8, 11, 8, base=2),
     }
 
     results = run_experiment(param_grid)
-    plt.plot(results['n_features'], results['accuracy'])
-    plt.xlabel('n_features')
+
+    results.plot.line(x='param_transformer__n_cluster', y='mean_test_score')
+
+    plt.xlabel('n_cluster')
     plt.ylabel('accuracy')
     plt.show()
 
