@@ -10,7 +10,7 @@ from main import main
 def run_experiment(param_grid: dict):
     args = Namespace(train_path='../data/MIT_split/train',
                      test_path='../data/MIT_split/test',
-                     cache_path='../data/cache')
+                     cache_path='../.cache')
     return main(args, param_grid)
 
 
@@ -21,6 +21,28 @@ def experiment_1():
     param_grid = {
         'classifier__kernel': ['linear', 'rbf', 'sigmoid', histogram_intersection_kernel],
         'classifier__C': np.logspace(-4, 4, 9),
+    }
+
+    results = run_experiment(param_grid)
+    results.loc[results.param_classifier__kernel == histogram_intersection_kernel, 'param_classifier__kernel'] = \
+        "histogram_intersection"
+
+    results.pivot(index='param_classifier__C', columns='param_classifier__kernel', values='mean_test_score') \
+        .plot.line(logx=True)
+
+    plt.xlabel('C')
+    plt.ylabel('accuracy')
+    plt.show()
+
+
+def experiment_1_2():
+    """
+    Test different kernels and penalty parameter of the error term "C" for the classifier.
+    """
+    param_grid = {
+        'classifier__kernel': ['linear', 'rbf', 'sigmoid', histogram_intersection_kernel],
+        'classifier__C': np.logspace(-4, 4, 9),
+        'transformer__levels': [1]
     }
 
     results = run_experiment(param_grid)

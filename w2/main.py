@@ -53,7 +53,7 @@ def main(args, param_grid=None):
     le = LabelEncoder()
     le.fit(train_labels)
 
-    cv = GridSearchCV(pipeline, param_grid, n_jobs=1, cv=3, refit=True, verbose=11, return_train_score=True)
+    cv = GridSearchCV(pipeline, param_grid, n_jobs=-1, cv=5, refit=True, verbose=11, return_train_score=True)
 
     with Timer('Train'):
         cv.fit(train_data, le.transform(train_labels))
