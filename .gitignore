@@ -104,7 +104,3 @@ venv.bak/
 
 # mypy
 .mypy_cache/
-
-data/cache
-data/descriptors
-.cache

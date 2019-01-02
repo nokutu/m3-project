@@ -1,17 +1,16 @@
 import argparse
 
 import numpy as np
-import pandas
-from functional import seq
 from joblib import Memory
 from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.svm import SVC
+import pandas
 
+from utils.load_data import load_dataset
 from descriptors.dense_sift import DenseSIFT
 from descriptors.visual_words import SpatialPyramid
-from utils.load_data import load_dataset
 from utils.timer import Timer
 
 
@@ -38,28 +37,30 @@ def main(args, param_grid=None):
     with Timer('Extract test descriptors'):
         test_pictures = sift.compute(test_filenames)
 
-    train_data = np.array(seq(train_pictures).map(lambda p: p.to_array()).to_list())
-    test_data = np.array(seq(test_pictures).map(lambda p: p.to_array()).to_list())
+    train_data = np.array([p.to_array() for p in train_pictures], copy=False)
+    test_data = np.array([p.to_array() for p in test_pictures], copy=False)
+
+    le = LabelEncoder()
+    le.fit(train_labels)
+    train_labels = le.transform(train_labels)
+    test_labels = le.transform(test_labels)
 
     # Create processing pipeline and run cross-validation.
     transformer = SpatialPyramid(levels=2)
-    scaler = StandardScaler()
-    classifier = SVC(C=1, gamma=.002)
+    scaler = StandardScaler(copy=False)
+    classifier = SVC(C=1, kernel='rbf', gamma=.001)
 
     memory = Memory(location=args.cache_path, verbose=1)
     pipeline = Pipeline(memory=memory,
                         steps=[('transformer', transformer), ('scaler', scaler), ('classifier', classifier)])
 
-    le = LabelEncoder()
-    le.fit(train_labels)
-
     cv = GridSearchCV(pipeline, param_grid, n_jobs=-1, cv=5, refit=True, verbose=11, return_train_score=True)
 
     with Timer('Train'):
-        cv.fit(train_data, le.transform(train_labels))
+        cv.fit(train_data, train_labels)
 
     with Timer('Test'):
-        accuracy = cv.score(test_data, le.transform(test_labels))
+        accuracy = cv.score(test_data, test_labels)
     print('Accuracy: {}'.format(accuracy))
 
     return pandas.DataFrame.from_dict(cv.cv_results_)

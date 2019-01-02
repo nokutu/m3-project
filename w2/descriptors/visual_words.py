@@ -1,11 +1,7 @@
-from typing import List
-
 import numpy as np
 from functional import seq
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.cluster import MiniBatchKMeans
-
-from model.picture import Picture
 
 
 class BoWTransformer(BaseEstimator, TransformerMixin):
