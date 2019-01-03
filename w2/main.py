@@ -2,7 +2,7 @@ import argparse
 
 import numpy as np
 from joblib import Memory
-from sklearn.model_selection import GridSearchCV
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.svm import SVC
@@ -54,7 +54,7 @@ def main(args, param_grid=None):
     pipeline = Pipeline(memory=memory,
                         steps=[('transformer', transformer), ('scaler', scaler), ('classifier', classifier)])
 
-    cv = GridSearchCV(pipeline, param_grid, n_jobs=-1, cv=5, refit=True, verbose=11, return_train_score=True)
+    cv = RandomizedSearchCV(pipeline, param_grid, n_jobs=-1, cv=3, refit=True, verbose=1, return_train_score=True)
 
     with Timer('Train'):
         cv.fit(train_data, train_labels)
