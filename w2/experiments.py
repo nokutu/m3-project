@@ -22,7 +22,6 @@ def experiment_1():
     param_grid = {
         'transformer__n_samples': np.linspace(10000, 100000, 5, dtype=int),
     }
-
     results = run_experiment(param_grid)
 
     results.plot.line(x='param_transformer__n_samples', y='mean_test_score')
@@ -36,16 +35,13 @@ def experiment_2():
     Test different codebook sizes, multiples of 2, for the min_batch k-means.
     """
     param_grid = {
-        'transformer__n_cluster': np.logspace(8, 11, 8, base=2),
+        'transformer__n_clusters': np.logspace(8, 11, 8, base=2, dtype=int),
     }
-
     results = run_experiment(param_grid)
 
-    results.plot.line(x='param_transformer__n_cluster', y='mean_test_score')
-
-    plt.xlabel('n_cluster')
+    results.plot.line(x='param_transformer__n_clusters', y='mean_test_score')
+    plt.xlabel('n_clusters')
     plt.ylabel('accuracy')
-
     plt.show()
 
 
