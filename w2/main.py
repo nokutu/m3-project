@@ -31,7 +31,7 @@ def main(args, param_grid=None):
     test_filenames, test_labels = load_dataset(args.test_path)
 
     # Compute the Dense SIFT descriptors for all the train and test images.
-    sift = DenseSIFT(step_size=16, memory=args.cache_path)
+    sift = DenseSIFT(memory=args.cache_path)
     with Timer('Extract train descriptors'):
         train_pictures = sift.compute(train_filenames)
     with Timer('Extract test descriptors'):
@@ -46,7 +46,7 @@ def main(args, param_grid=None):
     test_labels = le.transform(test_labels)
 
     # Create processing pipeline and run cross-validation.
-    transformer = SpatialPyramid(levels=2)
+    transformer = SpatialPyramid()
     scaler = StandardScaler(copy=False)
     classifier = SVC(C=1, kernel='rbf', gamma=.001)
 
