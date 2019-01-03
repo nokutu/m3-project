@@ -20,14 +20,14 @@ def experiment_1():
     which were obtained using dense_sift with different scale factors.
     """
     param_grid = {
-        'transformer__samples': np.linspace(10000, 100000, 5),
+        'transformer__n_samples': np.linspace(10000, 100000, 5),
     }
 
     results = run_experiment(param_grid)
 
-    results.plot.line(x='param_transformer__samples', y='mean_test_score')
+    results.plot.line(x='param_transformer__n_samples', y='mean_test_score')
 
-    plt.plot(results.param_transformer__samples, results.mean_test_score)
+    plt.plot(results.param_transformer__n_samples, results.mean_test_score)
 
     plt.xlabel('samples')
     plt.ylabel('accuracy')
