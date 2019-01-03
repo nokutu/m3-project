@@ -50,11 +50,11 @@ def main(args, param_grid=None):
     scaler = StandardScaler(copy=False)
     classifier = SVC(C=1, kernel='rbf', gamma=.001)
 
-    memory = Memory(location=args.cache_path, verbose=1)
+    memory = Memory(location=args.cache_path, verbose=0)
     pipeline = Pipeline(memory=memory,
                         steps=[('transformer', transformer), ('scaler', scaler), ('classifier', classifier)])
 
-    cv = RandomizedSearchCV(pipeline, param_grid, n_jobs=-1, cv=3, refit=True, verbose=1, return_train_score=True)
+    cv = RandomizedSearchCV(pipeline, param_grid, n_jobs=-1, cv=3, refit=True, verbose=11, return_train_score=True)
 
     with Timer('Train'):
         cv.fit(train_data, train_labels)
