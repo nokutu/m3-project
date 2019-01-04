@@ -91,7 +91,7 @@ def experiment_5():
     """
     param_grid = {
         'classifier__kernel': ['linear', 'rbf', 'sigmoid', histogram_intersection_kernel],
-        'classifier__C': np.logspace(-5, 15, 11, base=2),
+        'classifier__C': np.logspace(-3, 15, 5, base=2),
     }
 
     results = run_experiment(param_grid)
@@ -116,7 +116,7 @@ def experiment_6():
     """
     param_grid = {
         'classifier__kernel': ['linear', 'rbf', 'sigmoid', histogram_intersection_kernel],
-        'classifier__gamma': np.logspace(-15, 3, 10, base=2)
+        'classifier__gamma': np.logspace(-15, 3, 5, base=2)
     }
 
     results = run_experiment(param_grid)
