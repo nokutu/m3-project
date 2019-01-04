@@ -61,6 +61,8 @@ def main(args, param_grid=None):
 
     with Timer('Test'):
         accuracy = cv.score(test_data, test_labels)
+
+    print('Best params: {}'.format(cv.best_params_))
     print('Accuracy: {}'.format(accuracy))
 
     return pandas.DataFrame.from_dict(cv.cv_results_)

@@ -27,6 +27,7 @@ def experiment_1():
     results.plot.line(x='param_transformer__n_samples', y='mean_test_score')
     plt.xlabel('samples')
     plt.ylabel('accuracy')
+    plt.legend(loc='best')
     plt.show()
 
 
@@ -43,6 +44,7 @@ def experiment_2():
     results.plot.line(x='param_transformer__n_clusters', y='mean_test_score')
     plt.xlabel('n_clusters')
     plt.ylabel('accuracy')
+    plt.legend(loc='best')
     plt.show()
 
 
@@ -53,15 +55,13 @@ def experiment_3():
     param_grid = {
         'transformer__norm': ['l1', 'l2', 'power'],
     }
-
     results = run_experiment(param_grid)
 
     # Colormap needed until a bug is fixed in next version of pandas.
     results.plot.bar(x='param_transformer__norm', y='mean_test_score', colormap='jet')
-
     plt.xlabel('norm')
     plt.ylabel('accuracy')
-
+    plt.legend(loc='best')
     plt.show()
 
 
