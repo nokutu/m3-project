@@ -35,7 +35,8 @@ def experiment_2():
     Test different codebook sizes, multiples of 2, for the min_batch k-means.
     """
     param_grid = {
-        'transformer__n_clusters': np.logspace(8, 11, 8, base=2, dtype=int),
+        'transformer__n_clusters': np.logspace(7, 10, 8, base=2, dtype=int),
+        'transformer__n_levels': [1]
     }
     results = run_experiment(param_grid)
 
@@ -70,15 +71,15 @@ def experiment_4():
     descriptors to generate a general image descriptor.
     """
     param_grid = {
-        'transformer__levels': np.linspace(1, 3, 3),
+        'transformer__n_levels': np.linspace(1, 3, 3),
     }
 
     results = run_experiment(param_grid)
 
     # Colormap needed until a bug is fixed in next version of pandas.
-    results.plot.bar(x='param_transformer__levels', y='mean_test_score', colormap='jet')
+    results.plot.bar(x='param_transformer__n_levels', y='mean_test_score', colormap='jet')
 
-    plt.xlabel('levels')
+    plt.xlabel('n_levels')
     plt.ylabel('accuracy')
 
     plt.show()
