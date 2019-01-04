@@ -71,17 +71,15 @@ def experiment_4():
     descriptors to generate a general image descriptor.
     """
     param_grid = {
-        'transformer__n_levels': np.linspace(1, 3, 3),
+        'transformer__n_levels': np.linspace(1, 3, 3, dtype=int),
     }
-
     results = run_experiment(param_grid)
 
     # Colormap needed until a bug is fixed in next version of pandas.
     results.plot.bar(x='param_transformer__n_levels', y='mean_test_score', colormap='jet')
-
     plt.xlabel('n_levels')
     plt.ylabel('accuracy')
-
+    plt.legend(loc='best')
     plt.show()
 
 
