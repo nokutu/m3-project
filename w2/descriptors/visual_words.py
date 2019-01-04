@@ -57,21 +57,21 @@ class BoWTransformer(BaseEstimator, TransformerMixin):
 
 class SpatialPyramid(BoWTransformer):
 
-    def __init__(self, n_clusters: int = 500, n_samples: int = 10000, norm: str = 'l2', levels: int = 2):
+    def __init__(self, n_clusters: int = 500, n_samples: int = 10000, norm: str = 'l2', n_levels: int = 2):
         super().__init__(n_clusters, n_samples, norm)
-        self.levels = levels
+        self.n_levels = n_levels
 
         #print('{}: {}'.format(self.__class__.__name__, vars(self)))
 
     def transform(self, pictures: np.ndarray):
-        n_blocks = seq.range(self.levels).map(lambda l: 4 ** l).sum()
+        n_blocks = seq.range(self.n_levels).map(lambda l: 4 ** l).sum()
         visual_words = np.empty((len(pictures), n_blocks * self.n_clusters), dtype=np.float32)
         for i, picture in enumerate(pictures):
             words = self._codebook.predict(picture[1])
             j = 0
-            for l in range(self.levels):
+            for l in range(self.n_levels):
                 word_sets = self._descriptor_sets(l, picture)
-                w = 1 / 2 ** (self.levels - l)  # descriptors at finer resolutions are weighted more
+                w = 1 / 2 ** (self.n_levels - l)  # descriptors at finer resolutions are weighted more
                 for inds in word_sets:
                     histogram = np.bincount(words[inds], minlength=self.n_clusters)
                     histogram = self._normalize(histogram) * w

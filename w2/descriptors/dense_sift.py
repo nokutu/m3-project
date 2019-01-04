@@ -12,7 +12,7 @@ from model.picture import Picture
 
 class DenseSIFT:
 
-    def __init__(self, step_size: int = 10, scales: Tuple[int] = (4, 8, 12, 16), memory: str = None):
+    def __init__(self, step_size: int = 16, scales: Tuple[int] = (4, 8, 12, 16), memory: str = None):
         self.step_size = step_size
         self.scales = scales
         self.memory = memory
