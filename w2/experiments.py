@@ -7,11 +7,11 @@ from descriptors.histogram_intersection_kernel import histogram_intersection_ker
 from main import main
 
 
-def run_experiment(param_grid: dict):
+def run_experiment(param_grid: dict, plot_confusion=False):
     args = Namespace(train_path='../data/MIT_split/train',
                      test_path='../data/MIT_split/test',
                      cache_path='../.cache')
-    return main(args, param_grid)
+    return main(args, param_grid, plot_confusion=plot_confusion)
 
 
 def experiment_1():
@@ -134,9 +134,19 @@ def experiment_6():
 
 
 if __name__ == '__main__':
-    experiment_1()
+    # experiment_1()
     # experiment_2()
     # experiment_3()
     # experiment_4()
     # experiment_5()
     # experiment_6()
+
+    run_experiment({
+        'transformer__n_clusters': [760],
+        'transformer__n_samples': [100000],
+        'transformer__n_levels': [2],
+        'transformer__norm': ['power'],
+        'classifier__kernel': [histogram_intersection_kernel],
+        'classifier__C': [1],
+        'classifier__gamma': [.001]
+    }, plot_confusion=True)
