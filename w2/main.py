@@ -8,9 +8,11 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.svm import SVC
 import pandas
 
+from descriptors.histogram_intersection_kernel import histogram_intersection_kernel
 from utils.load_data import load_dataset
 from descriptors.dense_sift import DenseSIFT
 from descriptors.visual_words import SpatialPyramid
+from utils.metrics import plot_confusion_matrix
 from utils.timer import Timer
 
 
@@ -22,7 +24,7 @@ def _parse_args():
     return parser.parse_args()
 
 
-def main(args, param_grid=None):
+def main(args, param_grid=None, plot_confusion=False):
     if param_grid is None:
         param_grid = {}
 
@@ -46,9 +48,9 @@ def main(args, param_grid=None):
     test_labels = le.transform(test_labels)
 
     # Create processing pipeline and run cross-validation.
-    transformer = SpatialPyramid()
+    transformer = SpatialPyramid(n_clusters=760, n_samples=100000, n_levels=2, norm='power')
     scaler = StandardScaler(copy=False)
-    classifier = SVC(C=1, kernel='rbf', gamma=.001)
+    classifier = SVC(C=1, kernel=histogram_intersection_kernel, gamma=.001)
 
     memory = Memory(location=args.cache_path, verbose=1)
     pipeline = Pipeline(memory=memory,
@@ -64,6 +66,9 @@ def main(args, param_grid=None):
 
     print('Best params: {}'.format(cv.best_params_))
     print('Accuracy: {}'.format(accuracy))
+
+    if plot_confusion:
+        plot_confusion_matrix(le.inverse_transform(test_labels), le.inverse_transform(cv.predict(test_data)))
 
     return pandas.DataFrame.from_dict(cv.cv_results_)
 
