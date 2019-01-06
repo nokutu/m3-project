@@ -8,10 +8,10 @@ from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.svm import SVC
 import pandas
 
-from descriptors.histogram_intersection_kernel import histogram_intersection_kernel
 from utils.load_data import load_dataset
 from descriptors.dense_sift import DenseSIFT
 from descriptors.visual_words import SpatialPyramid
+from descriptors.histogram_intersection_kernel import histogram_intersection_kernel
 from utils.metrics import plot_confusion_matrix
 from utils.timer import Timer
 
