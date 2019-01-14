@@ -7,3 +7,6 @@ jupyter
 pyfunctional
 joblib
 ipyparallel
+keras
+tensorflow
+Pillow
