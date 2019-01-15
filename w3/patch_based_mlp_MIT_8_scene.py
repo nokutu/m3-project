@@ -13,8 +13,8 @@ from utils import softmax, generate_image_patches_db
 PATCH_SIZE = 64
 BATCH_SIZE = 16
 DATASET_DIR = '/home/mcv/datasets/MIT_split'
-PATCHES_DIR = '/home/cic/grupo06/work/data/MIT_split_patches'
-MODEL_FNAME = '/home/cic/grupo06/work/patch_based_mlp.h5'
+PATCHES_DIR = '/home/grupo06/work/data/MIT_split_patches'
+MODEL_FNAME = '/home/grupo06/work/patch_based_mlp.h5'
 
 
 def build_mlp(input_size=PATCH_SIZE, phase='TRAIN'):
@@ -86,6 +86,7 @@ if not os.path.exists(MODEL_FNAME):
         train_generator,
         steps_per_epoch=18810 // BATCH_SIZE,
         epochs=150,
+        verbose=2,
         validation_data=validation_generator,
         validation_steps=8070 // BATCH_SIZE)
 

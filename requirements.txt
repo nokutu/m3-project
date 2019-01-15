@@ -8,8 +8,7 @@ pyfunctional
 joblib
 ipyparallel
 keras
-tensorflow
+tensorflow-gpu
 Pillow
 colored
 pydot
-tensorflow-gpu

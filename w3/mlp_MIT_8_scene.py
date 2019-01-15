@@ -16,7 +16,7 @@ from scipy.misc import imresize
 IMG_SIZE = 32
 BATCH_SIZE = 16
 DATASET_DIR = '/home/mcv/datasets/MIT_split'
-MODEL_FNAME = '/home/cic/grupo06/work/my_first_mlp.h5'
+MODEL_FNAME = '/home/grupo06/work/my_first_mlp.h5'
 
 if not os.path.exists(DATASET_DIR):
     print(stylize('ERROR: dataset directory ' + DATASET_DIR + ' do not exists!\n', fg('blue')))
@@ -26,17 +26,17 @@ print('Building MLP model...\n')
 
 # Build the Multi Layer Perceptron model
 model = Sequential()
-model.add(Reshape((IMG_SIZE * IMG_SIZE * 3,), input_shape=(IMG_SIZE, IMG_SIZE, 3), name='first'))
-model.add(Dense(units=2048, activation='relu', name='second'))
-# model.add(Dense(units=1024, activation='relu'))
-model.add(Dense(units=8, activation='softmax'))
+model.add(Reshape((IMG_SIZE * IMG_SIZE * 3,), input_shape=(IMG_SIZE, IMG_SIZE, 3), name='data'))
+model.add(Dense(units=2048, activation='relu', name='fc1'))
+model.add(Dense(units=1024, activation='relu', name='fc2'))
+model.add(Dense(units=8, activation='softmax', name='prob'))
 
 model.compile(loss='categorical_crossentropy',
               optimizer='sgd',
               metrics=['accuracy'])
 
 print(model.summary())
-plot_model(model, to_file='modelMLP.png', show_shapes=True, show_layer_names=True)
+plot_model(model, to_file='/home/grupo06/work/modelMLP.png', show_shapes=True, show_layer_names=True)
 
 print('Done!\n')
 
@@ -56,7 +56,7 @@ train_datagen = ImageDataGenerator(
 test_datagen = ImageDataGenerator(rescale=1. / 255)
 
 # this is a generator that will read pictures found in
-# subfolers of 'data/train', and indefinitely generate
+# subfolders of 'data/train', and indefinitely generate
 # batches of augmented image data
 train_generator = train_datagen.flow_from_directory(
     DATASET_DIR + '/train',  # this is the target directory
@@ -77,6 +77,7 @@ history = model.fit_generator(
     train_generator,
     steps_per_epoch=1881 // BATCH_SIZE,
     epochs=50,
+    verbose=2,
     validation_data=validation_generator,
     validation_steps=807 // BATCH_SIZE)
 
@@ -92,7 +93,7 @@ plt.title('model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'validation'], loc='upper left')
-plt.savefig('accuracy.jpg')
+plt.savefig('/home/grupo06/work/accuracy.jpg')
 plt.close()
 # summarize history for loss
 plt.plot(history.history['loss'])
@@ -101,11 +102,11 @@ plt.title('model loss')
 plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'validation'], loc='upper left')
-plt.savefig('loss.jpg')
+plt.savefig('/home/grupo06/work/loss.jpg')
 
 # to get the output of a given layer
 # crop the model up to a certain layer
-model_layer = Model(inputs=model.input, outputs=model.get_layer('second').output)
+model_layer = Model(inputs=model.input, outputs=model.get_layer('fc2').output)
 
 # get the features from images
 directory = DATASET_DIR + '/test/coast'
