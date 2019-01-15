@@ -57,7 +57,7 @@ def generate_image_patches_db(in_directory, out_directory, patch_size=64):
                 count += 1
                 print('Processed images: ' + str(count) + ' / ' + str(total), end='\r')
                 im = Image.open(os.path.join(in_directory, split_dir, class_dir, imname))
-                patches = image.extract_patches_2d(np.array(im), (patch_size, patch_size), max_patches=1.0)g
+                patches = image.extract_patches_2d(np.array(im), (patch_size, patch_size), max_patches=1.0)
                 for i, patch in enumerate(patches):
                     patch = Image.fromarray(patch)
                     patch.save(
