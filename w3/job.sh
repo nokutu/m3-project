@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH -n 4 # Number of cores
-#SBATCH --mem 1000 # 2GB solicitados.
+#SBATCH --mem 4000
 #SBATCH -D /home/grupo06/ # working directory
 #SBATCH -p mhigh,mhigh # or mlow Partition to submit to
 #SBATCH --gres gpu:1 # Para pedir Pascales MAX 8
