@@ -13,8 +13,8 @@ from utils import softmax, generate_image_patches_db
 PATCH_SIZE = 64
 BATCH_SIZE = 16
 DATASET_DIR = '/home/mcv/datasets/MIT_split'
-PATCHES_DIR = '/home/grupoXX/work/data/MIT_split_patches'
-MODEL_FNAME = '/home/brupoXX/work/patch_based_mlp.h5'
+PATCHES_DIR = '/home/group06/work/data/MIT_split_patches'
+MODEL_FNAME = '/home/group06/work/patch_based_mlp.h5'
 
 
 def build_mlp(input_size=PATCH_SIZE, phase='TRAIN'):

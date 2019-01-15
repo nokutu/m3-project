@@ -10,3 +10,6 @@ ipyparallel
 keras
 tensorflow
 Pillow
+colored
+pydot
+tensorflow-gpu
