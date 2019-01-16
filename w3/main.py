@@ -39,8 +39,6 @@ if __name__ == '__main__':
     if os.path.exists(model_file):
         print('WARNING: model file ' + model_file + ' exists and will be overwritten!\n')
 
-    # TODO train
-
     print('Start training...\n')
 
     train_generator, validation_generator = train_validation_generator(args.dataset_dir, args.image_size,
