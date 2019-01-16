@@ -5,7 +5,7 @@ from keras.utils import plot_model
 
 from model import model_creation
 from model.generator import train_validation_generator
-from utils import args_to_str, str_to_args
+from utils import args_to_str, str_to_args, generate_image_patches_db
 
 OUTPUT_DIR = '/home/grupo06/work/'
 
@@ -19,8 +19,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('-o', '--optimizer', type=str, default='sgd')
     parser.add_argument('-m', '--metrics', type=str, nargs='+', default=['accuracy'])
     parser.add_argument('-s', '--image-size', type=int, default=64)
-    parser.add_argument('b', '--batch-size', type=int, default=16)
+    parser.add_argument('-b', '--batch-size', type=int, default=16)
     parser.add_argument('-n', '--names', type=str, nargs='+')
+    parser.add_argument('-p', '--patch', action='store_true', default=False)
+    parser.add_argument('-ps', '--patch-size', type=int, default=64)
+    parser.add_argument('-pd', '--patch-dir', type=str, default='/home/grupo06/work/data/MIT_split_patches')
     return parser.parse_args()
 
 
@@ -41,8 +44,14 @@ if __name__ == '__main__':
 
     print('Start training...\n')
 
-    train_generator, validation_generator = train_validation_generator(args.dataset_dir, args.image_size,
-                                                                       args.batch_size)
+    if args.patch:
+        generate_image_patches_db(args.dataset_dir, args.patch_dir, args.patch_size)
+
+        train_generator, validation_generator = train_validation_generator(args.patch_dir, args.image_size,
+                                                                           args.batch_size)
+    else:
+        train_generator, validation_generator = train_validation_generator(args.dataset_dir, args.image_size,
+                                                                           args.batch_size)
 
     history = model.fit_generator(
         train_generator,
