@@ -4,6 +4,7 @@ import os
 from keras.utils import plot_model
 
 from model import model_creation
+from model.generator import train_validation_generator
 from utils import args_to_str, str_to_args
 
 OUTPUT_DIR = '/home/grupo06/work/'
@@ -38,42 +39,20 @@ if __name__ == '__main__':
     if os.path.exists(model_file):
         print('WARNING: model file ' + model_file + ' exists and will be overwritten!\n')
 
+    # TODO train
+
     print('Start training...\n')
-    # this is the dataset configuration we will use for training
-    # only rescaling
-    train_datagen = ImageDataGenerator(
-        rescale=1. / 255,
-        horizontal_flip=True)
 
-    # this is the dataset configuration we will use for testing:
-    # only rescaling
-    test_datagen = ImageDataGenerator(rescale=1. / 255)
-
-    # this is a generator that will read pictures found in
-    # subfolders of 'data/train', and indefinitely generate
-    # batches of augmented image data
-    train_generator = train_datagen.flow_from_directory(
-        DATASET_DIR + '/train',  # this is the target directory
-        target_size=(IMG_SIZE, IMG_SIZE),  # all images will be resized to IMG_SIZExIMG_SIZE
-        batch_size=BATCH_SIZE,
-        classes=['coast', 'forest', 'highway', 'inside_city', 'mountain', 'Opencountry', 'street', 'tallbuilding'],
-        class_mode='categorical')  # since we use binary_crossentropy loss, we need categorical labels
-
-    # this is a similar generator, for validation data
-    validation_generator = test_datagen.flow_from_directory(
-        DATASET_DIR + '/test',
-        target_size=(IMG_SIZE, IMG_SIZE),
-        batch_size=BATCH_SIZE,
-        classes=['coast', 'forest', 'highway', 'inside_city', 'mountain', 'Opencountry', 'street', 'tallbuilding'],
-        class_mode='categorical')
+    train_generator, validation_generator = train_validation_generator(args.dataset_dir, args.image_size,
+                                                                       args.batch_size)
 
     history = model.fit_generator(
         train_generator,
-        steps_per_epoch=1881 // BATCH_SIZE,
+        steps_per_epoch=1881 // args.batch_size,
         epochs=50,
         verbose=2,
         validation_data=validation_generator,
-        validation_steps=807 // BATCH_SIZE)
+        validation_steps=807 // args.batch_size)
 
     print('Done!\n')
     print('Saving the model into ' + model_file + ' \n')
