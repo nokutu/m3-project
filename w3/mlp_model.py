@@ -5,7 +5,7 @@ from keras.utils import plot_model
 
 from model import model_creation
 from model.generator import train_validation_generator
-from utils import args_to_str, str_to_args, generate_image_patches_db
+from utils import args_to_str, generate_image_patches_db
 
 OUTPUT_DIR = '/home/grupo06/work/'
 
@@ -47,7 +47,7 @@ if __name__ == '__main__':
     if args.patch:
         generate_image_patches_db(args.dataset_dir, args.patch_dir, args.patch_size)
 
-        train_generator, validation_generator = train_validation_generator(args.patch_dir, args.image_size,
+        train_generator, validation_generator = train_validation_generator(args.patch_dir, args.patch_size,
                                                                            args.batch_size)
     else:
         train_generator, validation_generator = train_validation_generator(args.dataset_dir, args.image_size,

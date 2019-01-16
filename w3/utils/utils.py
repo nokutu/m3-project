@@ -1,8 +1,8 @@
 import argparse
 import os
 
-from PIL import Image
 import numpy as np
+from PIL import Image
 from sklearn.feature_extraction import image
 
 
