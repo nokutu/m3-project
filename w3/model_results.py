@@ -39,7 +39,7 @@ if __name__ == '__main__':
 
     print(stylize('Start evaluation ...\n', fg('blue')))
 
-    directory = args2.dataset + '/test'
+    directory = args.dataset + '/test'
     classes = {'coast': 0, 'forest': 1, 'highway': 2, 'inside_city': 3, 'mountain': 4, 'Opencountry': 5,
                'street': 6, 'tallbuilding': 7}
     correct = 0.
