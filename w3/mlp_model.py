@@ -19,7 +19,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('-m', '--metrics', type=str, nargs='+', default=['accuracy'])
     parser.add_argument('-s', '--image-size', type=int, default=64)
     parser.add_argument('-b', '--batch-size', type=int, default=16)
-    parser.add_argument('-p', '--patch', type=bool, action='store_true', default=False)
+    parser.add_argument('-p', '--patch', action='store_true', default=False)
     parser.add_argument('-ps', '--patch-size', type=int, default=64)
     parser.add_argument('-pd', '--patch-dir', type=str, default='/home/grupo06/work/data/MIT_split_patches')
     return parser.parse_args()
