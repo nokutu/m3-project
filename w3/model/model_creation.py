@@ -4,16 +4,16 @@ from keras.layers import Dense, Reshape
 from keras.models import Sequential, Model
 
 
-def _model_layer(model: Sequential, units: List[int], activation: List[str], name: str) -> Model:
+def _model_layer(model: Sequential, units: List[int], activation: List[str], name: str):
     if len(units) != len(activation):
         raise Exception('ERROR: feature layer parameters length is not equal!')
+
     for i in range(len(activation)):
         model.add(Dense(units=units[i], activation=activation[i], name=name + str(i)))
-    return model
 
 
 def model_creation(image_size: int, units: List[int], activation: List[str], loss: str, optimizer: str,
-                   metrics: List[str], svm = False) -> Model:
+                   metrics: List[str], svm=False) -> Model:
     # Build the Multi Layer Perceptron model
     model = Sequential()
     model.add(Reshape((image_size * image_size * 3,), input_shape=(image_size, image_size, 3), name='data'))
@@ -24,8 +24,7 @@ def model_creation(image_size: int, units: List[int], activation: List[str], los
     return model
 
 
-def _model_compile(model: Model, loss: str, optimizer: str, metrics: List[str]) -> Model:
+def _model_compile(model: Model, loss: str, optimizer: str, metrics: List[str]):
     model.compile(loss=loss,
                   optimizer=optimizer,
                   metrics=metrics)
-    return model
