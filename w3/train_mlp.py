@@ -37,7 +37,7 @@ def train(args):
 
     if args.patch:
         if not os.path.exists(args.patches_dir):
-            generate_image_patches_db(args.dataset, args.patches_dir, args.patch_size)
+            generate_image_patches_db(args.dataset_dir, args.patches_dir, args.patch_size)
         directory = args.patches_dir
         image_size = args.patch_size
     else:
@@ -52,7 +52,9 @@ def train(args):
         epochs=50,
         verbose=2,
         validation_data=validation_generator,
-        validation_steps=807 // args.batch_size)
+        validation_steps=807 // args.batch_size,
+        workers=4
+    )
 
     print('Optimization done!')
 

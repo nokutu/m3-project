@@ -4,7 +4,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 
 from descriptors.histogram_intersection_kernel import histogram_intersection_kernel
-from mlp_model import main
+from main import main
 
 
 def run_experiment(param_grid: dict, plot_confusion=False):
