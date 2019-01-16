@@ -1,5 +1,6 @@
 import argparse
-from model.multi_layer_perceptron import model_creation
+from model import model_creation
+from utils import args_to_str, str_to_args
 
 
 def parse_args() -> argparse.Namespace:
