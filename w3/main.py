@@ -1,6 +1,12 @@
 import argparse
+import os
+
+from keras.utils import plot_model
+
 from model import model_creation
 from utils import args_to_str, str_to_args
+
+OUTPUT_DIR = '/home/grupo06/work/'
 
 
 def parse_args() -> argparse.Namespace:
@@ -17,19 +23,21 @@ def parse_args() -> argparse.Namespace:
 
 
 if __name__ == '__main__':
+
     args = parse_args()
-    
-    model_creation(args.image_size, args.units, args.activation, args.loss, args.optimizer, args.metrics)
+    model_file = OUTPUT_DIR + 'model_' + args_to_str(args) + '.h5'
+
+    model = model_creation(args.image_size, args.units, args.activation, args.loss, args.optimizer, args.metrics)
 
     print(model.summary())
-    plot_model(model, to_file='/home/grupo06/work/modelMLP.png', show_shapes=True, show_layer_names=True)
+    plot_model(model, to_file=OUTPUT_DIR + 'modelMLP_' + args_to_str(args) + '.png', show_shapes=True,
+               show_layer_names=True)
     print('Done!\n')
 
-    if os.path.exists(file_name):
-        print('WARNING: model file ' + file_name + ' exists and will be overwritten!\n')
+    if os.path.exists(model_file):
+        print('WARNING: model file ' + model_file + ' exists and will be overwritten!\n')
 
     print('Start training...\n')
-
     # this is the dataset configuration we will use for training
     # only rescaling
     train_datagen = ImageDataGenerator(
@@ -67,6 +75,6 @@ if __name__ == '__main__':
         validation_steps=807 // BATCH_SIZE)
 
     print('Done!\n')
-    print('Saving the model into ' + MODEL_FNAME + ' \n')
-    model.save_weights(MODEL_FNAME)  # always save your weights after training or during training
+    print('Saving the model into ' + model_file + ' \n')
+    model.save_weights(model_file)  # always save your weights after training or during training
     print('Done!\n')
