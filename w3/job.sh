@@ -8,4 +8,4 @@
 
 source venv/bin/activate
 #python m3-project/w3/mlp_MIT_8_scene.py
-python m3-project/w3/patch_based_mlp_MIT_8_scene.py
+python m3-project/w3/mlp_model.py
