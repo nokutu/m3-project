@@ -15,6 +15,8 @@ def args_to_str(args: argparse.Namespace) -> str:
     out += '_' + '-'.join(args.metrics)
     out += '_' + str(args.image_size)
     out += '_' + str(args.batch_size)
+    out += '_' + str(args.patch)
+    out += '_' + str(args.patch_size)
     return out
 
 
@@ -29,6 +31,8 @@ def str_to_args(s: str) -> argparse.Namespace:
     args.metrics = params[4].split('-')
     args.image_size = int(params[5])
     args.batch_size = int(params[6])
+    args.patch = bool(params[7])
+    args.patch_size = int(params[8])
 
     return args
 
