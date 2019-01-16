@@ -1,1 +1,1 @@
-from .multi_layer_perceptron import model_creation
+from .model_creation import model_creation
