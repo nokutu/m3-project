@@ -9,5 +9,5 @@
 #SBATCH --array=1-30
 
 source venv/bin/activate
-#python m3-project/w3/mlp_MIT_8_scene.py
-python m3-project/w3/mlp_model.py ${SLURM_ARRAY_TASK_ID}
+
+python m3-project/w3/train_mlp.py ${SLURM_ARRAY_TASK_ID}
