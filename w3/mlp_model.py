@@ -1,5 +1,6 @@
-import os
 import argparse
+import os
+from typing import Dict, Any
 
 from keras.utils import plot_model
 
@@ -24,7 +25,7 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def train(args):
+def train(args: argparse.Namespace):
     model = create_model(args.image_size, args.units, args.activation, args.optimizer, args.loss, args.metrics)
     print(model.summary())
 
@@ -63,7 +64,7 @@ def train(args):
     model.save_weights(model_file)  # always save your weights after training or during training
 
 
-def print_setup(args):
+def print_setup(args: argparse.Namespace):
     print('\n\n\tExperimental setup')
     print('\t------------------\n')
     for k, v in vars(args).items():
@@ -71,8 +72,15 @@ def print_setup(args):
     print('\n\n')
 
 
-def main():
+def main(default_args: Dict[str, Any] = None):
     args = parse_args()
+
+    # Substitute given arguments if exist
+    if default_args:
+        a = vars(args)
+        a.update(default_args)
+        args = argparse.Namespace(**a)
+
     print_setup(args)
     train(args)
 
