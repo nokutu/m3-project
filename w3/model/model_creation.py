@@ -1,10 +1,7 @@
-import os
 from typing import List
 
+from keras.layers import Dense, Reshape
 from keras.models import Sequential, Model
-from keras.layers import Flatten, Dense, Reshape
-from keras.preprocessing.image import ImageDataGenerator
-from keras.utils import plot_model
 
 
 def _model_layer(model: Sequential, units: List[int], activation: List[str], name: str) -> Model:
@@ -16,12 +13,13 @@ def _model_layer(model: Sequential, units: List[int], activation: List[str], nam
 
 
 def model_creation(image_size: int, units: List[int], activation: List[str], loss: str, optimizer: str,
-                   metrics: List[str]) -> Model:
+                   metrics: List[str], svm = False) -> Model:
     # Build the Multi Layer Perceptron model
     model = Sequential()
     model.add(Reshape((image_size * image_size * 3,), input_shape=(image_size, image_size, 3), name='data'))
     _model_layer(model, units, activation, 'fc')
-    model.add(Dense(units=8, activation='softmax', name='prob'))
+    if not svm:
+        model.add(Dense(units=8, activation='softmax', name='prob'))
     _model_compile(model, loss, optimizer, metrics)
     return model
 
