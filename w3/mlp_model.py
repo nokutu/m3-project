@@ -43,12 +43,12 @@ if __name__ == '__main__':
 
     if args.patch:
         if not os.path.exists(args.patch_dir):
-            generate_image_patches_db(args.dataset_dir, args.patch_dir, args.patch_size)
+            generate_image_patches_db(args.dataset, args.patch_dir, args.patch_size)
 
         train_generator, validation_generator = train_validation_generator(args.patch_dir, args.patch_size,
                                                                            args.batch_size)
     else:
-        train_generator, validation_generator = train_validation_generator(args.dataset_dir, args.image_size,
+        train_generator, validation_generator = train_validation_generator(args.dataset, args.image_size,
                                                                            args.batch_size)
 
     history = model.fit_generator(
