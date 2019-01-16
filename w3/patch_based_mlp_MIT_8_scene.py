@@ -8,6 +8,8 @@ from keras.models import Sequential
 from keras.preprocessing.image import ImageDataGenerator
 
 # user defined variables
+from sklearn.feature_extraction import image
+
 from utils import softmax, generate_image_patches_db
 
 PATCH_SIZE = 64
