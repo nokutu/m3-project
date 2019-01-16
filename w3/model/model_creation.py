@@ -31,12 +31,3 @@ def _model_compile(model: Model, loss: str, optimizer: str, metrics: List[str]) 
                   optimizer=optimizer,
                   metrics=metrics)
     return model
-
-
-def _print_save_model(model: Model, file_name: str):
-    print(model.summary())
-    plot_model(model, to_file='/home/grupo06/work/modelMLP.png', show_shapes=True, show_layer_names=True)
-    print('Done!\n')
-
-    if os.path.exists(file_name):
-        print('WARNING: model file ' + file_name + ' exists and will be overwritten!\n')
