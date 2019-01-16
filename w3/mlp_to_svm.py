@@ -6,7 +6,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import SVC
 
-from model import model_creation
+from model import create_model
 from utils import load_dataset, Timer, str_to_args
 
 OUTPUT_DIR = '/home/grupo06/work/'
@@ -40,8 +40,8 @@ if __name__ == '__main__':
     train_labels = le.transform(train_labels)
     test_labels = le.transform(test_labels)
 
-    model = model_creation(args2.image_size, args2.units, args2.activation, args2.loss, args2.optimizer, args2.metrics,
-                           svm=True)
+    model = create_model(args2.image_size, args2.units, args2.activation, args2.optimizer, args2.loss, args2.metrics,
+                         svm=True)
 
     print(stylize('Done!\n', fg('blue')))
     print(stylize("Loading weights from " + args.model_file + ' ...\n', fg('blue')))

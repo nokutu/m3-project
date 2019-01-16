@@ -6,7 +6,7 @@ from colored import stylize, fg
 import numpy as np
 from sklearn.feature_extraction import image
 
-from model import model_creation
+from model import create_model
 from utils import str_to_args
 from utils.softmax import softmax
 
@@ -22,11 +22,11 @@ if __name__ == '__main__':
     args = parse_args()
     args2 = str_to_args(args.model_file.split('/')[-1].split['_'][1:])
     if args2.patch:
-        model = model_creation(args2.patch_size, args2.units, args2.activation, args2.loss, args2.optimizer,
-                               args2.metrics, test=True)
+        model = create_model(args2.patch_size, args2.units, args2.activation, args2.optimizer, args2.loss,
+                             args2.metrics, test=True)
     else:
-        model = model_creation(args2.image_size, args2.units, args2.activation, args2.loss, args2.optimizer,
-                               args2.metrics, test=True)
+        model = create_model(args2.image_size, args2.units, args2.activation, args2.optimizer, args2.loss,
+                             args2.metrics, test=True)
     print(model.summary())
 
     print(stylize('Done!\n', fg('blue')))
