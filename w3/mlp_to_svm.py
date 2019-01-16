@@ -45,7 +45,8 @@ if __name__ == '__main__':
     train_labels = le.transform(train_labels)
     test_labels = le.transform(test_labels)
 
-    model = model_creation(args.image_size, args.units, args.activation, args.loss, args.optimizer, args.metrics, True)
+    model = model_creation(args.image_size, args.units, args.activation, args.loss, args.optimizer, args.metrics,
+                           svm=True)
 
     print(model.summary())
     plot_model(model, to_file=OUTPUT_DIR + 'modelMLP_' + args_to_str(args) + '.png', show_shapes=True,
