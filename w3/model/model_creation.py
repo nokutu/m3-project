@@ -13,13 +13,16 @@ def _model_layer(model: Sequential, units: List[int], activation: List[str], nam
 
 
 def model_creation(image_size: int, units: List[int], activation: List[str], loss: str, optimizer: str,
-                   metrics: List[str], svm=False) -> Model:
+                   metrics: List[str], svm=False, test=False) -> Model:
     # Build the Multi Layer Perceptron model
     model = Sequential()
     model.add(Reshape((image_size * image_size * 3,), input_shape=(image_size, image_size, 3), name='data'))
     _model_layer(model, units, activation, 'fc')
     if not svm:
-        model.add(Dense(units=8, activation='softmax', name='prob'))
+        if not test:
+            model.add(Dense(units=8, activation='softmax', name='prob'))
+        else:
+            model.add(Dense(units=8, activation='linear', name='prob'))
     _model_compile(model, loss, optimizer, metrics)
     return model
 
