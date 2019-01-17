@@ -36,13 +36,6 @@ def train(args):
     train_filenames, train_labels = load_dataset(os.path.join(args.dataset_dir, 'train'))
     test_filenames, test_labels = load_dataset(os.path.join(args.dataset_dir, 'test'))
 
-    train_inds = np.random.choice(range(len(train_filenames)), 10)
-    train_filenames = [train_filenames[i] for i in train_inds]
-    train_labels = [train_labels[i] for i in train_inds]
-    test_inds = np.random.choice(range(len(test_filenames)), 10)
-    test_filenames = [test_filenames[i] for i in test_inds]
-    test_labels = [test_labels[i] for i in test_inds]
-
     print('Split images into patches...')
     train_images = [get_patches(fn, args.patch_size) for fn in train_filenames]
     test_images = [get_patches(fn, args.patch_size) for fn in test_filenames]
