@@ -6,7 +6,7 @@
 #SBATCH --gres gpu:1
 #SBATCH --chdir /home/grupo06/
 #SBATCH --output logs/%x_%j_%a.out
-#SBATCH --array=1-30
+#SBATCH --array=0-63
 
 source venv/bin/activate
 
