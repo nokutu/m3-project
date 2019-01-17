@@ -4,6 +4,7 @@ import configparser
 from train_mlp import main
 
 parser = argparse.ArgumentParser()
+parser.add_argument('config', type=str)
 parser.add_argument('index', type=int)
 parser.add_argument('-d', '--dataset_dir', type=str)
 parser.add_argument('-o', '--output_dir', type=str)
@@ -11,7 +12,7 @@ parser.add_argument('-pd', '--patches_dir', type=str)
 args = parser.parse_args()
 
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read(args.config)
 sections = config.sections()
 
 print('Selecting config {}/{}'.format(args.index, len(sections)))
