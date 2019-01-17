@@ -23,7 +23,7 @@ def get_parser() -> argparse.ArgumentParser:
     parser.add_argument('-l', '--loss', type=str, default='categorical_crossentropy')
     parser.add_argument('-op', '--optimizer', type=str, default='sgd')
     parser.add_argument('-m', '--metrics', type=str, nargs='+', default=['accuracy'])
-    parser.add_argument('-p', '--patch', action='store_true', default=False)
+    parser.add_argument('-p', '--patches', action='store_true', default=False)
     parser.add_argument('-ps', '--patch_size', type=int, default=64)
     parser.add_argument('-pd', '--patches_dir', type=str, default='/home/grupo06/work/data/MIT_split_patches')
     return parser
@@ -41,7 +41,7 @@ def train(args: argparse.Namespace):
 
     print('Start training...')
 
-    if args.patch:
+    if args.patches:
         if not os.path.exists(args.patches_dir):
             generate_image_patches_db(args.dataset_dir, args.patches_dir, args.patch_size)
         directory = args.patches_dir
@@ -49,14 +49,8 @@ def train(args: argparse.Namespace):
     else:
         directory = args.dataset_dir
         image_size = args.image_size
-
-    print('Creating train generator...')
     train_generator = get_train_generator(directory, image_size, args.batch_size)
-    print('Train generator created')
-
-    print('Creating validation generator...')
     validation_generator = get_validation_generator(directory, image_size, args.batch_size)
-    print('Validation generator created')
 
     history = model.fit_generator(
         train_generator,
@@ -67,6 +61,8 @@ def train(args: argparse.Namespace):
         validation_steps=validation_generator.samples // validation_generator.batch_size,
         workers=4
     )
+
+    print('Optimization done!')
 
     y_pred = model.predict_generator(validation_generator, 807 // args.batch_size + 1)
     y_pred = np.argmax(y_pred, axis=1)
@@ -81,10 +77,13 @@ def train(args: argparse.Namespace):
         pickle.dump(history.history, pickle_file)
 
     model_file = os.path.join(args.output_dir, 'model_{}.h5'.format(args_to_str(args)))
-    if os.path.exists(model_file):
-        print('WARNING: model file ' + model_file + ' exists and will be overwritten!')
-    print('Saving weights to ' + model_file)
-    model.save_weights(model_file)  # always save your weights after training or during training
+    print('Saving model to {}...'.format(model_file))
+    model.save(model_file)
+
+    weights_file = os.path.join(args.output_dir, 'model_{}_weights.h5'.format(args_to_str(args)))
+    print('Saving weights to {}...'.format(weights_file))
+    model.save_weights(weights_file)
+
     print('Finished')
 
 
