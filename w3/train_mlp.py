@@ -1,11 +1,16 @@
 import argparse
 import os
+import pickle
 from typing import Dict, Any
 
 from keras.utils import plot_model
 
 from model import create_model
 from utils import args_to_str, generate_image_patches_db, get_train_generator, get_validation_generator
+import numpy as np
+
+from utils.metrics import save_confusion_matrix, save_accuracy, save_loss
+from sklearn.metrics import confusion_matrix
 
 
 def parse_args() -> argparse.Namespace:
@@ -27,7 +32,7 @@ def parse_args() -> argparse.Namespace:
 
 def train(args: argparse.Namespace):
     model = create_model(args.image_size, args.units, args.activation, args.optimizer, args.loss, args.metrics)
-    print(model.summary())
+    model.summary()
 
     plot_model(model,
                to_file=os.path.join(args.output_dir, 'modelMLP_{}.png'.format(args_to_str(args))),
@@ -57,7 +62,17 @@ def train(args: argparse.Namespace):
         workers=4
     )
 
-    print('Optimization done!')
+    y_pred = model.predict_generator(validation_generator, 807 // args.batch_size + 1)
+    y_pred = np.argmax(y_pred, axis=1)
+    save_confusion_matrix(validation_generator.classes, y_pred,
+                          os.path.join(args.output_dir, 'cm_{}.png'.format(args_to_str(args)))
+                          )
+
+    save_accuracy(history, os.path.join(args.output_dir, 'acc_{}.png'.format(args_to_str(args))))
+    save_loss(history, os.path.join(args.output_dir, 'loss_{}.png'.format(args_to_str(args))))
+
+    with open(os.path.join(args.output_dir, 'history_{}.pkl'.format(args_to_str(args))), 'wb') as pickle_file:
+        pickle.dump(history.history, pickle_file)
 
     model_file = os.path.join(args.output_dir, 'model_{}.h5'.format(args_to_str(args)))
     if os.path.exists(model_file):

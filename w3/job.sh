@@ -10,4 +10,4 @@
 
 source venv/bin/activate
 
-python m3-project/w3/train_mlp.py ${SLURM_ARRAY_TASK_ID}
+python m3-project/w3/execution_script.py ${SLURM_ARRAY_TASK_ID}
