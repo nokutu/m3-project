@@ -47,16 +47,22 @@ def train(args: argparse.Namespace):
     else:
         directory = args.dataset_dir
         image_size = args.image_size
+
+    print('Creating train generator...')
     train_generator = get_train_generator(directory, image_size, args.batch_size)
+    print('Train generator created')
+
+    print('Creating validation generator...')
     validation_generator = get_validation_generator(directory, image_size, args.batch_size)
+    print('Validation generator created')
 
     history = model.fit_generator(
         train_generator,
-        steps_per_epoch=1881 // args.batch_size,
+        steps_per_epoch=train_generator.samples // train_generator.batch_size,
         epochs=50,
         verbose=2,
         validation_data=validation_generator,
-        validation_steps=807 // args.batch_size,
+        validation_steps=validation_generator.samples // validation_generator.batch_size,
         workers=4
     )
 
