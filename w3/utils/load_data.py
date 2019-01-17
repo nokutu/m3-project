@@ -1,11 +1,12 @@
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import numpy as np
 from PIL import Image
 from sklearn.feature_extraction import image
 
 from keras_preprocessing.image import ImageDataGenerator
-
+from multiprocessing import Pool
 
 def load_dataset(path):
     filenames, labels = [], []
@@ -49,6 +50,7 @@ def get_validation_generator(path: str, image_size: int, batch_size: int):
 
 
 def generate_image_patches_db(in_directory, out_directory, patch_size=64):
+    print('Generating patches...')
     if not os.path.exists(out_directory):
         os.makedirs(out_directory)
 
@@ -62,13 +64,24 @@ def generate_image_patches_db(in_directory, out_directory, patch_size=64):
             if not os.path.exists(os.path.join(out_directory, split_dir, class_dir)):
                 os.makedirs(os.path.join(out_directory, split_dir, class_dir))
 
-            for imname in os.listdir(os.path.join(in_directory, split_dir, class_dir)):
-                count += 1
-                print('Processed images: ' + str(count) + ' / ' + str(total), end='\r')
-                im = Image.open(os.path.join(in_directory, split_dir, class_dir, imname))
-                patches = image.extract_patches_2d(np.array(im), (patch_size, patch_size), max_patches=1.0)
-                for i, patch in enumerate(patches):
-                    patch = Image.fromarray(patch)
-                    patch.save(
-                        os.path.join(out_directory, split_dir, class_dir, imname.split(',')[0] + '_' + str(i) + '.jpg'))
-    print('\n')
+            print('Processed images: ' + str(count) + ' / ' + str(total), end='\r')
+
+            with ThreadPoolExecutor(max_workers=-1) as executor:
+                futures = [executor.submit(extract_and_save_patches, class_dir, in_directory, imname, out_directory,
+                                           patch_size, split_dir)
+                           for imname in os.listdir(os.path.join(in_directory, split_dir, class_dir))]
+
+                for _ in as_completed(futures):
+                    count += 1
+                    print('Processed images: ' + str(count) + ' / ' + str(total), end='\r')
+
+    print('Patches generated')
+
+
+def extract_and_save_patches(class_dir, in_directory, imname, out_directory, patch_size, split_dir):
+    im = Image.open(os.path.join(in_directory, split_dir, class_dir, imname))
+    patches = image.extract_patches_2d(np.array(im), (patch_size, patch_size), max_patches=128)
+    for i, patch in enumerate(patches):
+        patch = Image.fromarray(patch)
+        patch.save(
+            os.path.join(out_directory, split_dir, class_dir, imname.split(',')[0] + '_' + str(i) + '.jpg'))

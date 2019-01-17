@@ -3,17 +3,15 @@ import os
 import pickle
 from typing import Dict, Any
 
+import numpy as np
 from keras.utils import plot_model
 
 from model import create_model
 from utils import args_to_str, generate_image_patches_db, get_train_generator, get_validation_generator
-import numpy as np
-
 from utils.metrics import save_confusion_matrix, save_accuracy, save_loss
-from sklearn.metrics import confusion_matrix
 
 
-def parse_args() -> argparse.Namespace:
+def get_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser()
     parser.add_argument('-d', '--dataset_dir', type=str, default='/home/mcv/datasets/MIT_split')
     parser.add_argument('-o', '--output_dir', type=str, default='/home/grupo06/work')
@@ -27,7 +25,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument('-p', '--patch', action='store_true', default=False)
     parser.add_argument('-ps', '--patch_size', type=int, default=64)
     parser.add_argument('-pd', '--patches_dir', type=str, default='/home/grupo06/work/data/MIT_split_patches')
-    return parser.parse_args()
+    return parser
 
 
 def train(args: argparse.Namespace):
@@ -79,6 +77,7 @@ def train(args: argparse.Namespace):
         print('WARNING: model file ' + model_file + ' exists and will be overwritten!')
     print('Saving weights to ' + model_file)
     model.save_weights(model_file)  # always save your weights after training or during training
+    print('Finished')
 
 
 def print_setup(args: argparse.Namespace):
@@ -90,13 +89,16 @@ def print_setup(args: argparse.Namespace):
 
 
 def main(default_args: Dict[str, Any] = None):
-    args = parse_args()
+    parser = get_parser()
 
     # Substitute given arguments if exist
     if default_args:
+        args = parser.parse_known_args('')[0]
         a = vars(args)
         a.update(default_args)
         args = argparse.Namespace(**a)
+    else:
+        args = parser.parse_args()
 
     print_setup(args)
     train(args)
