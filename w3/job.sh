@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name group06-w3
 #SBATCH --ntasks 4
-#SBATCH --mem 4G
+#SBATCH --mem 8G
 #SBATCH --partition mhigh,mlow
 #SBATCH --gres gpu:1
 #SBATCH --chdir /home/grupo06/
