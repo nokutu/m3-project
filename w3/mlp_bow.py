@@ -11,38 +11,50 @@ from keras.models import Model, load_model
 
 from utils import load_dataset
 from model.bow import BoWTransformer
+from utils import Timer
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset_dir', type=str, default='/home/mcv/datasets/MIT_split')
-    parser.add_argument('--patch_size', type=int, default=64)
-    parser.add_argument('--batch_size', type=int, default=16)
+    parser.add_argument('--num_patches', type=int, default=128)
     parser.add_argument('--model_file', type=str, required=True)
     return parser.parse_args()
 
 
-def get_patches(image_file, patch_size):
-    img = Image.open(image_file)
-    patches = image.extract_patches_2d(np.array(img), (patch_size, patch_size), max_patches=128)
-    return patches
+class MLP:
+    def __init__(self, model_file, num_patches):
+        model = load_model(model_file)
+        model = Model(inputs=model.input, outputs=model.layers[-2].output)
+        print(model.summary())
+        self.model = model
+        self.patch_size = model.layers[0].input.shape[1:3]
+        self.num_patches = num_patches
+
+    def compute(self, image_files):
+        descriptors = []
+        for image_file in image_files:
+            patches = self._extract_patches(image_file)
+            des = self.model.predict(patches / 255., batch_size=self.num_patches)
+            descriptors.append(des)
+        return descriptors
+
+    def _extract_patches(self, image_file):
+        img = Image.open(image_file)
+        patches = image.extract_patches_2d(np.array(img), self.patch_size, max_patches=self.num_patches)
+        return patches
 
 
 def train(args):
-    print('Load model...')
-    model = load_model(args.model_file)
-    model = Model(inputs=model.input, outputs=model.layers[-2].output)
-
     train_filenames, train_labels = load_dataset(os.path.join(args.dataset_dir, 'train'))
     test_filenames, test_labels = load_dataset(os.path.join(args.dataset_dir, 'test'))
 
-    print('Split images into patches...')
-    train_images = [get_patches(fn, args.patch_size) for fn in train_filenames]
-    test_images = [get_patches(fn, args.patch_size) for fn in test_filenames]
+    model = MLP(args.model_file, args.num_patches)
 
-    print('Obtain descriptors from patches...')
-    train_descriptors = [model.predict(patches / 255., batch_size=128) for patches in train_images]
-    test_descriptors = [model.predict(patches / 255., batch_size=128) for patches in test_images]
+    with Timer('Extract train descriptors'):
+        train_descriptors = model.compute(train_filenames)
+    with Timer('Extract test descriptors'):
+        test_descriptors = model.compute(test_filenames)
 
     le = LabelEncoder()
     le.fit(train_labels)
@@ -54,12 +66,12 @@ def train(args):
     classifier = SVC()
     pipeline = make_pipeline(transformer, scaler, classifier)
 
-    print('Train BoW model...')
-    pipeline.fit(train_descriptors, train_labels)
+    with Timer('Train'):
+        pipeline.fit(train_descriptors, train_labels)
 
-    print('Test BoW model...')
-    accuracy = pipeline.score(test_descriptors, test_labels)
-    print(accuracy)
+    with Timer('Test'):
+        accuracy = pipeline.score(test_descriptors, test_labels)
+    print('Accuracy: {}'.format(accuracy))
 
 
 def main():
