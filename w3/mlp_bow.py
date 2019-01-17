@@ -10,7 +10,7 @@ from sklearn.pipeline import make_pipeline
 from keras.models import Model, load_model
 
 from utils import load_dataset
-from model.bow import BoWTransformer
+from model import BoWTransformer
 from utils import Timer
 
 

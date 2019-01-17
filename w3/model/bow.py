@@ -21,8 +21,7 @@ class BoWTransformer(BaseEstimator, TransformerMixin):
             verbose=False,
             batch_size=self.n_clusters * 3,
             compute_labels=False,
-            reassignment_ratio=10 ** -4,
-            random_state=42)
+            reassignment_ratio=10 ** -4)
 
         descriptors = np.vstack(descriptors)
         descriptors = descriptors[np.random.choice(descriptors.shape[0], self.n_samples, replace=False), :]
