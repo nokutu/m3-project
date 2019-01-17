@@ -84,4 +84,4 @@ def extract_and_save_patches(class_dir, in_directory, imname, out_directory, pat
     for i, patch in enumerate(patches):
         patch = Image.fromarray(patch)
         patch.save(
-            os.path.join(out_directory, split_dir, class_dir, imname.split(',')[0] + '_' + str(i) + '.jpg'))
+            os.path.join(out_directory, split_dir, class_dir, '{}_{}.jpg'.format(os.path.splitext(imname)[0], str(i))))
