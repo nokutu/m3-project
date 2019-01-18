@@ -6,7 +6,7 @@ from typing import Dict, Any
 import numpy as np
 from keras.utils import plot_model
 
-from model import create_model
+from model import build_model
 from utils import args_to_str, generate_image_patches_db, get_train_generator, get_validation_generator
 from utils.metrics import save_confusion_matrix, save_accuracy, save_loss
 from tensorflow.python.client import device_lib
@@ -31,7 +31,7 @@ def get_parser() -> argparse.ArgumentParser:
 
 def train(args: argparse.Namespace):
     print(device_lib.list_local_devices())
-    model = create_model(args.image_size, args.units, args.activation, args.optimizer, args.loss, args.metrics)
+    model = build_model(args.image_size, args.units, args.activation, args.optimizer, args.loss, args.metrics)
     model.summary()
 
     plot_model(model,

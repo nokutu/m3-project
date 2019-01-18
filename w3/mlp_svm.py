@@ -6,7 +6,7 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.svm import SVC
 
-from model import create_model
+from model import build_model
 from utils import load_dataset, Timer, str_to_args
 
 import numpy as np
@@ -45,7 +45,7 @@ if __name__ == '__main__':
         im = im.resize((args2.image_size, args2.image_size))
         test_ims[i, :, :, :] = np.array(im)
 
-    model = create_model(args2.image_size, args2.units, args2.activation, args2.optimizer, args2.loss, args2.metrics)
+    model = build_model(args2.image_size, args2.units, args2.activation, args2.optimizer, args2.loss, args2.metrics)
 
     print(stylize('Done!\n', fg('blue')))
     print(stylize("Loading weights from " + args.model_file + ' ...\n', fg('blue')))
