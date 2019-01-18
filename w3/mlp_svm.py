@@ -11,6 +11,8 @@ from utils import load_dataset, Timer, str_to_args
 
 import numpy as np
 
+from utils.metrics import save_confusion_matrix
+
 OUTPUT_DIR = '/home/grupo06/work/'
 
 
@@ -85,4 +87,7 @@ if __name__ == '__main__':
     with Timer('Test'):
         accuracy = cv.score(test_data, test_labels)
 
+    print('Best estimator')
+    print(cv.best_estimator_)
     print('Test accuracy: ', accuracy)
+

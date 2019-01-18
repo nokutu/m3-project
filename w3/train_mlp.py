@@ -64,6 +64,7 @@ def train(args: argparse.Namespace):
 
     print('Optimization done!')
 
+    # Don't working properly?
     y_pred = model.predict_generator(validation_generator, 807 // args.batch_size + 1)
     y_pred = np.argmax(y_pred, axis=1)
     save_confusion_matrix(validation_generator.classes, y_pred,
