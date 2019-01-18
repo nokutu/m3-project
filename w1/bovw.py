@@ -7,7 +7,7 @@ import pandas
 from utils.load_data import load_dataset
 from utils.extract_descriptors import SIFT, DenseSIFT
 from utils.classifier import Classifier
-from utils.metrics import save_confusion_matrix
+from utils.metrics import plot_confusion_matrix
 from utils.timer import Timer
 
 
@@ -74,7 +74,7 @@ def run(args):
 
             # Optionally plot confusion matrix.
             if args.confusion_matrix:
-                save_confusion_matrix(test_labels, classifier.predict(test_descriptors))
+                plot_confusion_matrix(test_labels, classifier.predict(test_descriptors))
 
     return pandas.DataFrame(results, columns=["method", "distance", "n_features", "step_size", "n_clusters",
                                               "n_neighbors", "accuracy"])
