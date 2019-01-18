@@ -22,7 +22,9 @@ def parse_args() -> argparse.Namespace:
 if __name__ == '__main__':
 
     args = parse_args()
-    args2 = str_to_args(args.model_file.split('/')[-1].split['_'][1:])
+    last = '_'.join(args.model_file.split('/')[-1].split('.')[0].split('_')[1:])
+    last = last.replace('categorical_crossentropy', 'categorical-crossentropy')
+    args2 = str_to_args(last)
 
     # Read the train and test files.
     train_filenames, train_labels = load_dataset(args.dataset + '/train')
@@ -31,17 +33,16 @@ if __name__ == '__main__':
     train_ims = []
     test_ims = []
     for imname in train_filenames:
-        train_ims.append(Image.open(args.dataset + '/train', imname))
+        train_ims.append(Image.open(imname))
     for imname in test_filenames:
-        test_ims.append(Image.open(args.dataset + '/test', imname))
+        test_ims.append(Image.open(imname))
 
     le = LabelEncoder()
     le.fit(train_labels)
     train_labels = le.transform(train_labels)
     test_labels = le.transform(test_labels)
 
-    model = create_model(args2.image_size, args2.units, args2.activation, args2.optimizer, args2.loss, args2.metrics,
-                         svm=True)
+    model = create_model(args2.image_size, args2.units, args2.activation, args2.optimizer, args2.loss, args2.metrics)
 
     print(stylize('Done!\n', fg('blue')))
     print(stylize("Loading weights from " + args.model_file + ' ...\n', fg('blue')))

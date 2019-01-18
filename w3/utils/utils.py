@@ -19,7 +19,7 @@ def str_to_args(s: str) -> argparse.Namespace:
     args = argparse.Namespace()
     params = s.split('_')
 
-    args.units = map(int, params[0].split('-'))
+    args.units = list(map(int, params[0].split('-')))
     args.activation = params[1].split('-')
     args.loss = params[2]
     args.optimizer = params[3]
@@ -28,5 +28,8 @@ def str_to_args(s: str) -> argparse.Namespace:
     args.batch_size = int(params[6])
     args.patches = bool(params[7])
     args.patch_size = int(params[8])
+
+    if args.loss == 'categorical-crossentropy':
+        args.loss = 'categorical_crossentropy'
 
     return args
