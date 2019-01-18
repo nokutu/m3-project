@@ -3,11 +3,13 @@ import argparse
 from PIL import Image
 from colored import stylize, fg
 from sklearn.model_selection import GridSearchCV
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, StandardScaler
 from sklearn.svm import SVC
 
 from model import create_model
 from utils import load_dataset, Timer, str_to_args
+
+import numpy as np
 
 OUTPUT_DIR = '/home/grupo06/work/'
 
@@ -30,17 +32,16 @@ if __name__ == '__main__':
     train_filenames, train_labels = load_dataset(args.dataset + '/train')
     test_filenames, test_labels = load_dataset(args.dataset + '/test')
 
-    train_ims = []
-    test_ims = []
-    for imname in train_filenames:
-        train_ims.append(Image.open(imname))
-    for imname in test_filenames:
-        test_ims.append(Image.open(imname))
-
-    le = LabelEncoder()
-    le.fit(train_labels)
-    train_labels = le.transform(train_labels)
-    test_labels = le.transform(test_labels)
+    train_ims = np.empty((len(train_filenames), args2.image_size, args2.image_size, 3))
+    test_ims = np.empty((len(test_filenames), args2.image_size, args2.image_size, 3))
+    for i, imname in enumerate(train_filenames):
+        im = Image.open(imname)
+        im = im.resize((args2.image_size, args2.image_size))
+        train_ims[i, :, :, :] = np.array(im)
+    for i, imname in enumerate(test_filenames):
+        im = Image.open(imname)
+        im = im.resize((args2.image_size, args2.image_size))
+        test_ims[i, :, :, :] = np.array(im)
 
     model = create_model(args2.image_size, args2.units, args2.activation, args2.optimizer, args2.loss, args2.metrics)
 
@@ -54,18 +55,34 @@ if __name__ == '__main__':
 
     print(stylize('Start evaluation ...\n', fg('blue')))
 
-    train_data = model.predict(train_ims)
-    test_data = model.predict(test_ims)
+    model.outputs.append(model.layers[-2].output)
+    train_data = model.predict(train_ims)[1]
+    test_data = model.predict(test_ims)[1]
+
+    le = LabelEncoder()
+    se = StandardScaler()
+
+    le.fit(train_labels)
+    train_labels = le.transform(train_labels)
+    test_labels = le.transform(test_labels)
+
+    se.fit(train_data)
+    train_data = se.transform(train_data)
+    test_data = se.transform(test_data)
 
     print('Start training...\n')
 
     param_grid = {
-        'kernel': ['rbf', 'linear', 'sigmoid']
+        'kernel': ['rbf', 'linear', 'sigmoid'],
+        'gamma': np.logspace(-3, 9, 5),
+        'C': np.logspace(-3, 9, 5)
     }
-    cv = GridSearchCV(SVC(), param_grid, n_jobs=-1, cv=3, refit=True, verbose=11, return_train_score=True)
+    cv = GridSearchCV(SVC(), param_grid, n_jobs=3, cv=5, refit=True, verbose=11, return_train_score=True)
 
     with Timer('Train'):
         cv.fit(train_data, train_labels)
 
     with Timer('Test'):
         accuracy = cv.score(test_data, test_labels)
+
+    print('Test accuracy: ', accuracy)
