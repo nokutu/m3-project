@@ -8,6 +8,7 @@ from sklearn.feature_extraction import image
 from keras_preprocessing.image import ImageDataGenerator
 from multiprocessing import Pool
 
+
 def load_dataset(path):
     filenames, labels = [], []
     for label in os.listdir(path):

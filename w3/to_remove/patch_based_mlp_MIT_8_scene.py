@@ -10,7 +10,8 @@ from keras.preprocessing.image import ImageDataGenerator
 # user defined variables
 from sklearn.feature_extraction import image
 
-from utils import softmax, generate_image_patches_db
+from .utils_to_remove import softmax
+from utils import generate_image_patches_db
 
 PATCH_SIZE = 64
 BATCH_SIZE = 16
