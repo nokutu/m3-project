@@ -7,10 +7,11 @@ from sklearn.feature_extraction import image
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.svm import SVC
 from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
 from keras.models import Model, load_model
 
 from utils import load_dataset
-from model import BoWTransformer
+from model import BoWTransformer, histogram_intersection_kernel
 from utils import Timer
 
 
@@ -61,16 +62,25 @@ def train(args):
     train_labels = le.transform(train_labels)
     test_labels = le.transform(test_labels)
 
-    transformer = BoWTransformer()
-    scaler = StandardScaler()
-    classifier = SVC()
+    transformer = BoWTransformer(n_clusters=760, n_samples=100000, norm='power')
+    scaler = StandardScaler(copy=False)
+    classifier = SVC(C=1, kernel=histogram_intersection_kernel, gamma=.001)
     pipeline = make_pipeline(transformer, scaler, classifier)
 
+    param_grid = {
+        'svc__C': np.logspace(-3, 15, 5, base=2),
+        'svc__kernel': ['linear', 'rbf', 'sigmoid'],
+        'svc__gamma': np.logspace(-15, 3, 5, base=2)
+    }
+    cv = GridSearchCV(pipeline, param_grid, n_jobs=-1, cv=3, refit=True, verbose=11)
+
     with Timer('Train'):
-        pipeline.fit(train_descriptors, train_labels)
+        cv.fit(train_descriptors, train_labels)
 
     with Timer('Test'):
-        accuracy = pipeline.score(test_descriptors, test_labels)
+        accuracy = cv.score(test_descriptors, test_labels)
+
+    print('Best params: {}'.format(cv.best_params_))
     print('Accuracy: {}'.format(accuracy))
 
 
