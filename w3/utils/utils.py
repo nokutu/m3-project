@@ -1,4 +1,6 @@
+import os
 import argparse
+import pickle
 
 
 def args_to_str(args: argparse.Namespace) -> str:
@@ -33,3 +35,19 @@ def str_to_args(s: str) -> argparse.Namespace:
         args.loss = 'categorical_crossentropy'
 
     return args
+
+
+def get_best_model():
+    max_acc = 0
+    max_f = None
+
+    for f in os.listdir('data/history'):
+        with open(os.path.join('data/history', f), 'rb') as file:
+            history = pickle.load(file)
+            acc = history['val_acc'][-1]
+            if acc > max_acc:
+                max_acc = acc
+                max_f = f
+
+    print('Best model: ', max_f)
+    print('Accuracy: ', max_acc)
