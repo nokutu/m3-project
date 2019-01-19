@@ -1,18 +1,17 @@
-import os
 import argparse
+import os
 
 import numpy as np
 from PIL import Image
+from keras.models import Model, load_model
 from sklearn.feature_extraction import image
+from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.svm import SVC
-from sklearn.pipeline import make_pipeline
-from sklearn.model_selection import GridSearchCV, RandomizedSearchCV
-from keras.models import Model, load_model
 
-from utils import load_dataset
 from model import BoWTransformer, histogram_intersection_kernel
 from utils import Timer
+from utils import load_dataset
 
 
 def parse_args():
@@ -77,19 +76,22 @@ def train(args):
 
     param_grid = {
         'C': np.logspace(-3, 15, 5, base=2),
-        'kernel': ['linear', 'rbf', 'sigmoid', histogram_intersection_kernel],
+        'kernel': [histogram_intersection_kernel],
         'gamma': np.logspace(-15, 3, 5, base=2)
     }
-    cv = GridSearchCV(SVC(), param_grid, n_jobs=-1, cv=3, refit=True, verbose=11)
+    cv = GridSearchCV(SVC(), param_grid, n_jobs=2, cv=3, refit=True, verbose=11)
 
     with Timer('Train'):
         cv.fit(train_descriptors, train_labels)
+
+    test_descriptors = transformer.transform(test_descriptors)
+    test_descriptors = scaler.transform(test_descriptors)
 
     with Timer('Test'):
         accuracy = cv.score(test_descriptors, test_labels)
 
     print('Best params: {}'.format(cv.best_params_))
-    print('Accuracy: {}'.format(accuracy))
+    print('Test accuracy: {}'.format(accuracy))
 
 
 def main():
