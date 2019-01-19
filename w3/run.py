@@ -27,8 +27,8 @@ if 'activation' in arguments:
     arguments['activation'] = arguments['activation'].split(',')
 if 'metrics' in arguments:
     arguments['metrics'] = arguments['metrics'].split(',')
-if 'patch' in arguments:
-    arguments['patch'] = bool(arguments['patch'])
+if 'patches' in arguments:
+    arguments['patches'] = bool(arguments['patches'])
 
 if args.dataset_dir:
     arguments['dataset_dir'] = args.dataset_dir
