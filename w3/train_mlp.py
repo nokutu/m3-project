@@ -64,17 +64,9 @@ def train(args: argparse.Namespace):
 
     print('Optimization done!')
 
-    # Don't working properly?
-    y_pred = model.predict_generator(validation_generator, 807 // args.batch_size + 1)
-    y_pred = np.argmax(y_pred, axis=1)
-    save_confusion_matrix(validation_generator.classes, y_pred,
-                          os.path.join(args.output_dir, 'cm_{}.png'.format(args_to_str(args)))
-                          )
-
-    save_accuracy(history, os.path.join(args.output_dir, 'acc_{}.png'.format(args_to_str(args))))
-    save_loss(history, os.path.join(args.output_dir, 'loss_{}.png'.format(args_to_str(args))))
-
-    with open(os.path.join(args.output_dir, 'history_{}.pkl'.format(args_to_str(args))), 'wb') as pickle_file:
+    history_file = os.path.join(args.output_dir, 'history_{}.pkl'.format(args_to_str(args)))
+    print('Saving training history to {}...'.format(history_file))
+    with open(history_file, 'wb') as pickle_file:
         pickle.dump(history.history, pickle_file)
 
     model_file = os.path.join(args.output_dir, 'model_{}.h5'.format(args_to_str(args)))
@@ -85,7 +77,7 @@ def train(args: argparse.Namespace):
     print('Saving weights to {}...'.format(weights_file))
     model.save_weights(weights_file)
 
-    print('Finished')
+    print('Finished!')
 
 
 def print_setup(args: argparse.Namespace):

@@ -5,14 +5,18 @@ import argparse
 import numpy as np
 from PIL import Image
 from sklearn.feature_extraction import image
+from sklearn.metrics import accuracy_score
 
 from model import load_model_from_weights
+from utils.metrics import save_confusion_matrix
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument('weights_file', type=str)
     parser.add_argument('-d', '--dataset_dir', type=str, default='/home/mcv/datasets/MIT_split')
+    parser.add_argument('-o', '--output_dir', type=str, default='/home/grupo06/work')
+    parser.add_argument('-b', '--batch_size', type=int, default=16)
     parser.add_argument('-p', '--patches', action='store_true', default=False)
     return parser.parse_args()
 
@@ -28,14 +32,16 @@ def test(args):
     model = load_model_from_weights(args.weights_file)
     model.summary()
 
+    directory = os.path.join(args.dataset_dir, 'test')
     input_size = model.layers[0].input.shape[1:3]
 
     print('Start evaluation ...')
 
-    directory = os.path.join(args.dataset_dir, 'test')
-    classes = {'coast': 0, 'forest': 1, 'highway': 2, 'inside_city': 3, 'mountain': 4, 'Opencountry': 5, 'street': 6,
-               'tallbuilding': 7}
-    correct = 0.
+    classes = {'coast': 0, 'forest': 1, 'highway': 2, 'inside_city': 3, 'mountain': 4, 'Opencountry': 5, 'street': 6, 'tallbuilding': 7}
+
+    actual = []
+    predicted = []
+
     total = 807
     count = 0
 
@@ -50,13 +56,18 @@ def test(args):
                 img = img.resize(input_size, resample=Image.BICUBIC)
                 out = model.predict(np.expand_dims(np.array(img), 0) / 255.)
             predicted_cls = np.argmax(softmax(np.mean(out, axis=0)))
-            if predicted_cls == cls:
-                correct += 1
+            actual.append(cls)
+            predicted.append(predicted_cls)
             count += 1
             sys.stdout.write('\rEvaluated images: {}/{}'.format(count, total))
             sys.stdout.flush()
 
-    print('\nTest Acc. = {}'.format(correct / total))
+    accuracy = accuracy_score(actual, predicted)
+    print('\nTest Acc. = {}'.format(accuracy))
+
+    args_str = os.path.splitext(os.path.basename(args.weights_file))[0].split('_', 1)[1]
+    cm_file = os.path.join(args.output_dir, 'cm_{}.png'.format(args_str))
+    save_confusion_matrix(actual, predicted, cm_file)
 
 
 def main():
