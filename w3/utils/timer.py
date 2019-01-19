@@ -7,6 +7,7 @@ class Timer:
 
     def __enter__(self):
         self.start = time.time()
+        print('{}...'.format(self.name))
         return self
 
     def __exit__(self, *args):

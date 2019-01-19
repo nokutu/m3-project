@@ -1,5 +1,3 @@
-from typing import List
-
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.cluster import MiniBatchKMeans
@@ -7,15 +5,18 @@ from sklearn.cluster import MiniBatchKMeans
 
 class BoWTransformer(BaseEstimator, TransformerMixin):
 
+    _codebook: MiniBatchKMeans
+
     def __init__(self, n_clusters: int = 500, n_samples: int = 10000, norm: str = 'l2'):
         self.n_clusters = n_clusters
         self.n_samples = n_samples
         self.norm = norm
 
         self._codebook = None
+
+    def fit(self, descriptors: np.ndarray, y=None):
         np.random.seed(42)
 
-    def fit(self, descriptors: List[np.ndarray], y=None):
         self._codebook = MiniBatchKMeans(
             n_clusters=self.n_clusters,
             verbose=False,
@@ -23,13 +24,14 @@ class BoWTransformer(BaseEstimator, TransformerMixin):
             compute_labels=False,
             reassignment_ratio=10 ** -4)
 
-        descriptors = np.vstack(descriptors)
+        s = descriptors.shape
+        descriptors = descriptors.reshape(s[0]*s[1], s[2])
         descriptors = descriptors[np.random.choice(descriptors.shape[0], self.n_samples, replace=False), :]
         self._codebook.fit(descriptors)
         return self
 
-    def transform(self, descriptors: List[np.ndarray]):
-        visual_words = np.empty((len(descriptors), self.n_clusters), dtype=np.float32)
+    def transform(self, descriptors: np.ndarray):
+        visual_words = np.empty((descriptors.shape[0], self.n_clusters), dtype=np.float32)
         for i, des in enumerate(descriptors):
             words = self._codebook.predict(des)
             histogram = np.bincount(words, minlength=self.n_clusters)
