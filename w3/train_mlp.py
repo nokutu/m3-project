@@ -3,13 +3,11 @@ import os
 import pickle
 from typing import Dict, Any
 
-import numpy as np
 from keras.utils import plot_model
+from tensorflow.python.client import device_lib
 
 from model import build_model
 from utils import args_to_str, generate_image_patches_db, get_train_generator, get_validation_generator
-from utils.metrics import save_confusion_matrix, save_accuracy, save_loss
-from tensorflow.python.client import device_lib
 
 
 def get_parser() -> argparse.ArgumentParser:
@@ -34,10 +32,8 @@ def train(args: argparse.Namespace):
     model = build_model(args.image_size, args.units, args.activation, args.optimizer, args.loss, args.metrics)
     model.summary()
 
-    plot_model(model,
-               to_file=os.path.join(args.output_dir, 'modelMLP_{}.png'.format(args_to_str(args))),
-               show_shapes=True,
-               show_layer_names=True)
+    model_plot_file = os.path.join(args.output_dir, 'modelMLP_{}.png'.format(args_to_str(args)))
+    plot_model(model, to_file=model_plot_file, show_shapes=True, show_layer_names=True)
 
     print('Start training...')
 

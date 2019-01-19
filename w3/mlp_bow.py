@@ -81,13 +81,13 @@ def train(args):
     }
     cv = GridSearchCV(SVC(), param_grid, n_jobs=2, cv=3, refit=True, verbose=11)
 
-    with Timer('Train'):
+    with Timer('Fit SVM'):
         cv.fit(train_descriptors, train_labels)
 
     test_descriptors = transformer.transform(test_descriptors)
     test_descriptors = scaler.transform(test_descriptors)
 
-    with Timer('Test'):
+    with Timer('Test SVM'):
         accuracy = cv.score(test_descriptors, test_labels)
 
     print('Best params: {}'.format(cv.best_params_))
