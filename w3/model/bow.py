@@ -13,8 +13,6 @@ class BoWTransformer(BaseEstimator, TransformerMixin):
         self._codebook = None
 
     def fit(self, descriptors: np.ndarray, y=None):
-        np.random.seed(42)
-
         self._codebook = MiniBatchKMeans(
             n_clusters=self.n_clusters,
             verbose=False,
