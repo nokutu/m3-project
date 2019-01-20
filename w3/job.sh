@@ -9,4 +9,4 @@
 #SBATCH --array=56-63
 
 source venv/bin/activate
-python m3-project/w3/run.py m3-project/w3/config.ini ${SLURM_ARRAY_TASK_ID}
+python m3-project/w3/run.py m3-project/w3/config.ini ${SLURM_ARRAY_TASK_ID} --batch_size 256
