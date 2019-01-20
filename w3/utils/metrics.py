@@ -1,9 +1,8 @@
 import itertools
 
 import numpy as np
-from keras.callbacks import History
-from matplotlib import pyplot as plt
 from sklearn.metrics import confusion_matrix
+from matplotlib import pyplot as plt
 
 
 def save_confusion_matrix(y_true, y_pred, output_file: str):
@@ -33,10 +32,10 @@ def save_confusion_matrix(y_true, y_pred, output_file: str):
     plt.close()
 
 
-def save_accuracy(history: History, output_file: str):
+def save_accuracy(history: dict, output_file: str):
     # summarize history for accuracy
-    plt.plot(history.history['acc'])
-    plt.plot(history.history['val_acc'])
+    plt.plot(history['acc'])
+    plt.plot(history['val_acc'])
     plt.title('model accuracy')
     plt.ylabel('accuracy')
     plt.xlabel('epoch')
@@ -45,10 +44,10 @@ def save_accuracy(history: History, output_file: str):
     plt.close()
 
 
-def save_loss(history: History, output_file: str):
+def save_loss(history: dict, output_file: str):
     # summarize history for loss
-    plt.plot(history.history['loss'])
-    plt.plot(history.history['val_loss'])
+    plt.plot(history['loss'])
+    plt.plot(history['val_loss'])
     plt.title('model loss')
     plt.ylabel('loss')
     plt.xlabel('epoch')
