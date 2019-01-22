@@ -2,8 +2,8 @@
 #SBATCH --job-name w4
 #SBATCH --ntasks 4
 #SBATCH --mem 16G
-#SBATCH --partition mhigh
-#SBATCH --qos masterhigh
+#SBATCH --partition mhigh,mlow
+#SBATCH --qos masterlow
 #SBATCH --gres gpu:1
 #SBATCH --chdir /home/grupo06/
 #SBATCH --output logs/%x_%u_%j.out

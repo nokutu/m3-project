@@ -119,7 +119,7 @@ def main():
     train_generator = get_train_generator(args.dataset_dir, config['batch_size'])
     validation_generator = get_validation_generator(args.dataset_dir, config['batch_size'])
 
-    tb_callback = callbacks.TensorBoard(log_dir=args.log_dir)
+    tb_callback = callbacks.TensorBoard(log_dir=os.path.join(args.log_dir, config_to_str(config)))
 
     history = model.fit_generator(
         train_generator,
