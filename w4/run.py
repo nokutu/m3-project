@@ -1,5 +1,6 @@
 import os
 import argparse
+import pickle
 
 import numpy as np
 from keras import applications
@@ -43,6 +44,13 @@ def get_config(args: argparse.Namespace):
     return config
 
 
+def config_to_str(config):
+    s = []
+    for k, v in sorted(config.items(), key=lambda t: t[0]):
+        s.append('{}={}'.format(k, v))
+    return '__'.join(s)
+
+
 def get_train_generator(dataset_dir: str, batch_size: int):
     train_datagen = ImageDataGenerator(rescale=1./255, horizontal_flip=True)
 
@@ -56,7 +64,7 @@ def get_train_generator(dataset_dir: str, batch_size: int):
 
 
 def get_validation_generator(dataset_dir: str, batch_size: int):
-    test_datagen = ImageDataGenerator(rescale=1. / 255)
+    test_datagen = ImageDataGenerator(rescale=1./255)
 
     validation_generator = test_datagen.flow_from_directory(
         directory=os.path.join(dataset_dir, 'test'),
@@ -67,7 +75,7 @@ def get_validation_generator(dataset_dir: str, batch_size: int):
     return validation_generator
 
 
-def build_model(optimizer: str, lr: float, loss: str, classes: int):
+def build_model(optimizer: str, lr: float, loss: str, classes: int, freeze=True):
     base_model = applications.nasnet.NASNetMobile(
         input_shape=None,
         include_top=True,
@@ -77,7 +85,7 @@ def build_model(optimizer: str, lr: float, loss: str, classes: int):
         classes=1000)
 
     for layer in base_model.layers:
-        layer.trainable = False
+        layer.trainable = not freeze
 
     base_model.layers.pop()
     my_dense = Dense(classes, activation='softmax', name='predictions')
@@ -93,9 +101,9 @@ def build_model(optimizer: str, lr: float, loss: str, classes: int):
 def print_setup(config: dict):
     print('\n\tExperimental setup')
     print('\t------------------\n')
-    for k, v in config.items():
+    for k, v in sorted(config.items(), key=lambda t: t[0]):
         print('\t{}: {}'.format(k, v))
-    print('\n')
+    print('')
 
 
 def main():
@@ -104,7 +112,7 @@ def main():
     print_setup(config)
 
     model = build_model(optimizer=config['optimizer'], lr=config['learning_rate'], loss=config['loss'], classes=8)
-    model.summary()
+    #model.summary()
 
     train_generator = get_train_generator(args.dataset_dir, config['batch_size'])
     validation_generator = get_validation_generator(args.dataset_dir, config['batch_size'])
@@ -118,6 +126,15 @@ def main():
         validation_steps=validation_generator.samples // validation_generator.batch_size,
         workers=4
     )
+
+    model_file = os.path.join(args.output_dir, 'nasnet__{}.h5'.format(config_to_str(config)))
+    model.save(model_file)
+    print('Model saved to {}'.format(model_file))
+
+    history_file = os.path.join(args.output_dir, 'history__{}.pkl'.format(config_to_str(config)))
+    with open(history_file, 'wb') as f:
+        pickle.dump(history.history, f)
+    print('History saved to {}'.format(history_file))
 
 
 if __name__ == '__main__':
