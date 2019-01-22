@@ -8,6 +8,7 @@ from keras_preprocessing.image import ImageDataGenerator
 from keras.layers import Dense
 from keras.models import Model
 from keras import optimizers
+from keras import callbacks
 from keras import backend as K
 
 
@@ -16,6 +17,7 @@ def parse_args():
     parser.add_argument('index', type=int)
     parser.add_argument('-d', '--dataset_dir', type=str, default='/home/mcv/datasets/MIT_split')
     parser.add_argument('-o', '--output_dir', type=str, default='/home/grupo06/work')
+    parser.add_argument('-l', '--log_dir', type=str, default='/home/grupo06/logs/tensorboard')
     parser.add_argument('-b', '--batch_size', type=int, default=32)
     parser.add_argument('-e', '--epochs', type=int, default=100)
     parser.add_argument('-x', '--extend', action='store_true', default=False)
@@ -52,7 +54,7 @@ def config_to_str(config):
 
 
 def get_train_generator(dataset_dir: str, batch_size: int):
-    train_datagen = ImageDataGenerator(rescale=1./255, horizontal_flip=True)
+    train_datagen = ImageDataGenerator(rescale=1. / 255, horizontal_flip=True)
 
     train_generator = train_datagen.flow_from_directory(
         directory=os.path.join(dataset_dir, 'train'),
@@ -64,7 +66,7 @@ def get_train_generator(dataset_dir: str, batch_size: int):
 
 
 def get_validation_generator(dataset_dir: str, batch_size: int):
-    test_datagen = ImageDataGenerator(rescale=1./255)
+    test_datagen = ImageDataGenerator(rescale=1. / 255)
 
     validation_generator = test_datagen.flow_from_directory(
         directory=os.path.join(dataset_dir, 'test'),
@@ -117,11 +119,14 @@ def main():
     train_generator = get_train_generator(args.dataset_dir, config['batch_size'])
     validation_generator = get_validation_generator(args.dataset_dir, config['batch_size'])
 
+    tb_callback = callbacks.TensorBoard(log_dir=args.log_dir)
+
     history = model.fit_generator(
         train_generator,
         steps_per_epoch=train_generator.samples // train_generator.batch_size,
         epochs=config['epochs'],
         verbose=2,
+        callbacks=[tb_callback],
         validation_data=validation_generator,
         validation_steps=validation_generator.samples // validation_generator.batch_size,
         workers=4
