@@ -5,9 +5,7 @@ from sklearn.metrics import confusion_matrix
 from matplotlib import pyplot as plt
 
 
-def save_confusion_matrix(y_true, y_pred, output_file: str):
-    classes = list(set(y_true))
-
+def save_confusion_matrix(y_true, y_pred, classes, output_file: str):
     cm = confusion_matrix(y_true, y_pred, labels=classes)
     cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 

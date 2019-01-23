@@ -39,7 +39,7 @@ def main():
         steps=(validation_generator.samples // validation_generator.batch_size) + 1
     )
     y_pred = np.argmax(y_pred, axis=1)
-    save_confusion_matrix(validation_generator.classes, y_pred,
+    save_confusion_matrix(validation_generator.classes, y_pred, validation_generator.class_indices,
                           args.model_file.replace('nasnet', 'confusion').replace('.h5', '.png'))
 
 

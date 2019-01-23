@@ -99,12 +99,12 @@ def main():
 
     model = build_model(optimizer_name=config['optimizer'], lr=config['learning_rate'], decay_fraction=config['decay'],
                         momentum=config['momentum'], loss=config['loss'], classes=8)
-    model.summary()
+    # model.summary()
 
     train_generator = get_train_generator(args.dataset_dir, config['batch_size'])
     validation_generator = get_validation_generator(args.dataset_dir, config['batch_size'])
 
-    # tb_callback = callbacks.TensorBoard(log_dir=os.path.join(args.log_dir, config_to_str(config)))
+    tb_callback = callbacks.TensorBoard(log_dir=os.path.join(args.log_dir, config_to_str(config)))
     es_callback = callbacks.EarlyStopping(monitor='val_acc', min_delta=0, patience=args.patience, verbose=0,
                                           mode='auto', baseline=None, restore_best_weights=True)
     test_callback = TestCallback()
@@ -114,7 +114,7 @@ def main():
         steps_per_epoch=train_generator.samples // train_generator.batch_size,
         epochs=config['epochs'],
         verbose=2,
-        callbacks=[es_callback, test_callback],
+        callbacks=[tb_callback, es_callback, test_callback],
         validation_data=validation_generator,
         validation_steps=validation_generator.samples // validation_generator.batch_size,
         workers=4
@@ -132,7 +132,7 @@ def main():
         steps_per_epoch=train_generator.samples // train_generator.batch_size,
         epochs=config['epochs'],
         verbose=2,
-        callbacks=[test_callback, es_callback],
+        callbacks=[tb_callback, test_callback, es_callback],
         validation_data=validation_generator,
         validation_steps=validation_generator.samples // validation_generator.batch_size,
         workers=4
