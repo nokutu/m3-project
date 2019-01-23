@@ -1,12 +1,6 @@
 import os
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
-import numpy as np
-from PIL import Image
-from sklearn.feature_extraction import image
 
 from keras_preprocessing.image import ImageDataGenerator
-from multiprocessing import Pool
 
 
 def load_dataset(path):
@@ -24,27 +18,34 @@ def load_dataset(path):
     return filenames, labels
 
 
-def get_train_generator(path: str, image_size: int, batch_size: int):
-    train_datagen = ImageDataGenerator(rescale=1. / 255, horizontal_flip=True)
+def get_train_generator(dataset_dir: str, batch_size: int):
+    train_datagen = ImageDataGenerator(
+        rescale=1. / 255,
+        shear_range=0.2,
+        zoom_range=0.2,
+        horizontal_flip=True,
+    )
 
     train_generator = train_datagen.flow_from_directory(
-        directory=os.path.join(path, 'train'),
-        target_size=(image_size, image_size),
+        directory=os.path.join(dataset_dir, 'train'),
+        target_size=(224, 224),
         batch_size=batch_size,
-        classes=['coast', 'forest', 'highway', 'inside_city', 'mountain', 'Opencountry', 'street', 'tallbuilding'],
-        class_mode='categorical')
+        class_mode='categorical',
+    )
 
     return train_generator
 
 
-def get_validation_generator(path: str, image_size: int, batch_size: int):
-    test_datagen = ImageDataGenerator(rescale=1. / 255)
+def get_validation_generator(dataset_dir: str, batch_size: int, shuffle=True):
+    test_datagen = ImageDataGenerator(
+        rescale=1. / 255
+    )
 
     validation_generator = test_datagen.flow_from_directory(
-        directory=os.path.join(path, 'test'),
-        target_size=(image_size, image_size),
+        directory=os.path.join(dataset_dir, 'test'),
+        target_size=(224, 224),
         batch_size=batch_size,
-        classes=['coast', 'forest', 'highway', 'inside_city', 'mountain', 'Opencountry', 'street', 'tallbuilding'],
+        shuffle=shuffle,
         class_mode='categorical')
 
     return validation_generator
