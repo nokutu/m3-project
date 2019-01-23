@@ -7,6 +7,7 @@
 #SBATCH --gres gpu:1
 #SBATCH --chdir /home/grupo06/
 #SBATCH --output logs/%x_%u_%j.out
+#SBATCH --array=1-50
 
 source venv/bin/activate
-python m3-project/w4/run.py ${SLURM_JOB_ID}
+python m3-project/w4/run.py ${SLURM_ARRAY_TASK_ID}
