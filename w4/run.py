@@ -17,7 +17,7 @@ from utils import get_train_generator, get_validation_generator
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('index', type=int)
-    parser.add_argument('-d', '--dataset_dir', type=str, default='/home/mcv/datasets/MIT_split')
+    parser.add_argument('-d', '--dataset_dir', type=str, default='/home/grupo06/MIT_split')
     parser.add_argument('-o', '--output_dir', type=str, default='/home/grupo06/work')
     parser.add_argument('-l', '--log_dir', type=str, default='/home/grupo06/logs/tensorboard')
     parser.add_argument('-b', '--batch_size', type=int, default=32)
@@ -76,7 +76,9 @@ def build_model(optimizer_name: str, lr: float, decay_fraction: float, momentum:
     K.set_value(optimizer.lr, lr)
     if hasattr(optimizer, 'momentum'):
         K.set_value(optimizer.momentum, momentum)
-    K.set_value(optimizer.decay, lr * decay_fraction)
+    if hasattr(optimizer, 'decay'):
+        K.set_value(optimizer.decay, lr * decay_fraction)
+
     model.compile(optimizer, loss, metrics=['accuracy'])
 
     return model
@@ -130,7 +132,7 @@ def main():
         steps_per_epoch=train_generator.samples // train_generator.batch_size,
         epochs=config['epochs'],
         verbose=2,
-        callbacks=[es_callback],
+        callbacks=[test_callback, es_callback],
         validation_data=validation_generator,
         validation_steps=validation_generator.samples // validation_generator.batch_size,
         workers=4
