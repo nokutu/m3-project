@@ -36,7 +36,7 @@ def main():
     validation_generator = get_validation_generator(args.dataset_dir, args.batch_size, False)
     y_pred = model.predict_generator(
         validation_generator,
-        steps=(validation_generator.samples // validation_generator.batch_size) +1
+        steps=(validation_generator.samples // validation_generator.batch_size) + 1
     )
     y_pred = np.argmax(y_pred, axis=1)
     save_confusion_matrix(validation_generator.classes, y_pred,
