@@ -126,7 +126,7 @@ def main():
         steps_per_epoch=train_generator.samples // train_generator.batch_size,
         epochs=config['epochs'],
         verbose=2,
-        callbacks=[tb_callback],
+        # callbacks=[tb_callback],
         validation_data=validation_generator,
         validation_steps=validation_generator.samples // validation_generator.batch_size,
         workers=4
