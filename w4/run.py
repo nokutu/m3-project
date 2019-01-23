@@ -1,16 +1,15 @@
-import os
 import argparse
+import os
 import pickle
 
 import numpy as np
 from keras import applications
-from keras.utils import plot_model
-from keras_preprocessing.image import ImageDataGenerator
+from keras import backend as K
+from keras import callbacks
+from keras import optimizers
 from keras.layers import Dense
 from keras.models import Model
-from keras import optimizers
-from keras import callbacks
-from keras import backend as K
+from keras.optimizers import Adamax
 
 from utils import get_train_generator, get_validation_generator
 
@@ -23,6 +22,7 @@ def parse_args():
     parser.add_argument('-l', '--log_dir', type=str, default='/home/grupo06/logs/tensorboard')
     parser.add_argument('-b', '--batch_size', type=int, default=32)
     parser.add_argument('-e', '--epochs', type=int, default=100)
+    parser.add_argument('-p', '--patience', type=int, default=5)
     parser.add_argument('-x', '--extend', action='store_true', default=False)
     return parser.parse_args()
 
@@ -53,7 +53,7 @@ def config_to_str(config):
     return '__'.join(s)
 
 
-def build_model(optimizer: str, lr: float, loss: str, classes: int, freeze=True):
+def build_model(optimizer_name: str, lr: float, momentum: float, loss: str, classes: int, freeze=True) -> Model:
     base_model = applications.nasnet.NASNetMobile(
         input_shape=None,
         include_top=True,
@@ -69,9 +69,10 @@ def build_model(optimizer: str, lr: float, loss: str, classes: int, freeze=True)
     my_dense = Dense(classes, activation='softmax', name='predictions')
     model = Model(inputs=base_model.input, outputs=my_dense(base_model.layers[-1].output))
 
-    optimizer = optimizers.get(optimizer)
-    K.set_value(optimizer.lr, lr)
-
+    optimizer = optimizers.get(optimizer_name)
+    optimizer.lr = K.variable(lr, name='lr')
+    if hasattr(optimizer, 'momentum'):
+        optimizer.momentum = K.variable(momentum, name='momentum')
     model.compile(optimizer, loss, metrics=['accuracy'])
     return model
 
@@ -89,20 +90,39 @@ def main():
     config = get_config(args)
     print_setup(config)
 
-    model = build_model(optimizer=config['optimizer'], lr=config['learning_rate'], loss=config['loss'], classes=8)
-    #model.summary()
+    model = build_model(optimizer_name=config['optimizer'], lr=config['learning_rate'], momentum=config['momentum'],
+                        loss=config['loss'], classes=8)
+    # model.summary()
 
     train_generator = get_train_generator(args.dataset_dir, config['batch_size'])
     validation_generator = get_validation_generator(args.dataset_dir, config['batch_size'])
 
     tb_callback = callbacks.TensorBoard(log_dir=os.path.join(args.log_dir, config_to_str(config)))
-    es_callback = callbacks.EarlyStopping(monitor='val_acc', min_delta=0, patience=10, verbose=0, mode='auto',
-                                          baseline=None, restore_best_weights=True)
+    es_callback = callbacks.EarlyStopping(monitor='val_acc', min_delta=0, patience=args.patience, verbose=0,
+                                          mode='auto', baseline=None, restore_best_weights=True)
 
     history = model.fit_generator(
         train_generator,
         steps_per_epoch=train_generator.samples // train_generator.batch_size,
         epochs=config['epochs'],
+        verbose=2,
+        callbacks=[tb_callback, es_callback],
+        validation_data=validation_generator,
+        validation_steps=validation_generator.samples // validation_generator.batch_size,
+        workers=4
+    )
+
+    print('Completed first training, initianting full nn retrain')
+
+    for layer in model.layers:
+        layer.trainable = True
+
+    model.compile(model.optimizer, model.loss, model.metrics)
+
+    history2 = model.fit_generator(
+        train_generator,
+        steps_per_epoch=train_generator.samples // train_generator.batch_size,
+        epochs=20,
         verbose=2,
         callbacks=[es_callback],
         validation_data=validation_generator,

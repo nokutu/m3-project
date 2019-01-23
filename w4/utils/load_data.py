@@ -1,6 +1,6 @@
 import os
 
-from keras_preprocessing.image import ImageDataGenerator
+from keras_preprocessing.image import ImageDataGenerator, DirectoryIterator
 
 
 def load_dataset(path):
@@ -18,7 +18,7 @@ def load_dataset(path):
     return filenames, labels
 
 
-def get_train_generator(dataset_dir: str, batch_size: int):
+def get_train_generator(dataset_dir: str, batch_size: int) -> DirectoryIterator:
     train_datagen = ImageDataGenerator(
         rescale=1. / 255,
         shear_range=0.2,
@@ -31,12 +31,13 @@ def get_train_generator(dataset_dir: str, batch_size: int):
         target_size=(224, 224),
         batch_size=batch_size,
         class_mode='categorical',
+        seed=42
     )
 
     return train_generator
 
 
-def get_validation_generator(dataset_dir: str, batch_size: int, shuffle=True):
+def get_validation_generator(dataset_dir: str, batch_size: int, shuffle=True) -> DirectoryIterator:
     test_datagen = ImageDataGenerator(
         rescale=1. / 255
     )
@@ -46,6 +47,7 @@ def get_validation_generator(dataset_dir: str, batch_size: int, shuffle=True):
         target_size=(224, 224),
         batch_size=batch_size,
         shuffle=shuffle,
+        seed=42,
         class_mode='categorical')
 
     return validation_generator
