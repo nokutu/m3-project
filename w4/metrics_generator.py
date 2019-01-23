@@ -1,4 +1,5 @@
 import argparse
+import numpy as np
 import pickle
 
 from keras.engine.saving import load_model
@@ -8,10 +9,8 @@ from utils.metrics import save_accuracy, save_loss, save_confusion_matrix
 
 
 def get_model_history(model_file):
-    with open(model_file, 'rb') as file:
-        model = load_model(file)
-
-    history_file = model_file.replace('model', 'history').replace('.h5', '.pkl')
+    model = load_model(model_file)
+    history_file = model_file.replace('nasnet', 'history').replace('.h5', '.pkl')
     with open(history_file, 'rb') as file:
         history = pickle.load(file)
 
@@ -30,14 +29,18 @@ def parse_args():
 def main():
     args = parse_args()
     model, history = get_model_history(args.model_file)
-    print('Maximum accuracy: ', history.history['val_acc'][-1])
-    save_accuracy(history, args.model_file.replace('model', 'accuracy').replace('.h5', '.png'))
-    save_loss(history, args.model_file.replace('model', 'loss').replace('.h5', '.png'))
+    print('Maximum accuracy: ', history['val_acc'][-1])
+    save_accuracy(history, args.model_file.replace('nasnet', 'accuracy').replace('.h5', '.png'))
+    save_loss(history, args.model_file.replace('nasnet', 'loss').replace('.h5', '.png'))
 
     validation_generator = get_validation_generator(args.dataset_dir, args.batch_size, False)
-    y_pred = model.predict(validation_generator)
+    y_pred = model.predict_generator(
+        validation_generator,
+        steps=(validation_generator.samples // validation_generator.batch_size) +1
+    )
+    y_pred = np.argmax(y_pred, axis=1)
     save_confusion_matrix(validation_generator.classes, y_pred,
-                          args.model_file.replace('model', 'confusion').replace('.h5', '.png'))
+                          args.model_file.replace('nasnet', 'confusion').replace('.h5', '.png'))
 
 
 if __name__ == '__main__':
