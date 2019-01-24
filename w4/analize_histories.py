@@ -18,17 +18,18 @@ def load_dataframe(output_dir):
             with open(os.path.join(output_dir, file), 'rb') as pickle_file:
                 history = pickle.load(pickle_file)
                 best_index = history['val_acc'].index(max(history['val_acc']))
-
+                index = config.get('index')
+                fit = config.get('second_fit_lr_fraction')
                 row = [
-                    config.get('index'),
-                    config.get('batch_size'),
-                    config.get('decay'),
-                    config.get('epochs'),
-                    config.get('learning_rate'),
+                    int(index) if index else index,
+                    int(config.get('batch_size')),
+                    float(config.get('decay')),
+                    int(config.get('epochs')),
+                    float(config.get('learning_rate')),
                     config.get('loss'),
-                    config.get('momentum'),
+                    float(config.get('momentum')),
                     config.get('optimizer'),
-                    config.get('second_fit_lr_fraction'),
+                    float(fit) if fit else fit,
                     len(history['val_acc']),
                     history['acc'][best_index],
                     history['loss'][best_index],
@@ -37,7 +38,7 @@ def load_dataframe(output_dir):
                 ]
                 data.append(row)
 
-    return pandas.DataFrame(data, columns=['index', 'batch_size', 'decay', 'epochs', 'learning_rate', 'loss', 'momentum',
+    return pandas.DataFrame(data, columns=['index', 'batch_size', 'decay', 'max_epochs', 'learning_rate', 'loss', 'momentum',
                                            'optimizer', 'second_fit_lr_fraction', 'epochs', 'best_train_acc',
                                            'best_train_loss', 'best_val_acc', 'best_val_loss'])
 
