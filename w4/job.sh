@@ -6,7 +6,7 @@
 #SBATCH --qos masterlow
 #SBATCH --gres gpu:1
 #SBATCH --chdir /home/grupo06/
-#SBATCH --output logs/%x_%u_%j.out
+#SBATCH --output logs/%x_%u_%A_%a.out
 #SBATCH --array=1-50
 
 source venv/bin/activate
