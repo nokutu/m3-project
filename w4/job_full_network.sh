@@ -7,7 +7,7 @@
 #SBATCH --gres gpu:1
 #SBATCH --chdir /home/grupo06/
 #SBATCH --output logs/%x_%u_%A_%a.out
-#SBATCH --array=1-50
+#SBATCH --array=19,17,31,52,57,38,20,64,89,37,66%6
 
 source venv/bin/activate
 python m3-project/w4/run.py ${SLURM_ARRAY_TASK_ID} -o /home/grupo06/work/full_network -tf

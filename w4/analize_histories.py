@@ -55,6 +55,7 @@ if __name__ == '__main__':
     args = parse_args()
     df = load_dataframe(args.output_dir)
     pandas.set_option('display.max_columns', 500)
+    pandas.set_option('display.max_rows', 500)
     pandas.set_option('display.width', 200)
     print(df[(df['best_val_acc'] > 0.90) & (df['second_fit_lr_fraction'].isnull())])
     print(df[(df['best_val_acc'] > 0.90) & (df['second_fit_lr_fraction'].notnull())])
