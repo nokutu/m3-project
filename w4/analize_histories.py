@@ -18,26 +18,30 @@ def load_dataframe(output_dir):
             with open(os.path.join(output_dir, file), 'rb') as pickle_file:
                 history = pickle.load(pickle_file)
                 best_index = history['val_acc'].index(max(history['val_acc']))
-
+                index = config.get('index')
+                fit = config.get('second_fit_lr_fraction')
                 row = [
-                    config['batch_size'],
-                    config['decay'],
-                    config['epochs'],
-                    config['learning_rate'],
-                    config['loss'],
-                    config['momentum'],
-                    config['optimizer'],
-                    config['second_fit_lr_fraction'],
-                    history['val_acc'][best_index],
-                    history['val_loss'][best_index],
+                    int(index) if index else index,
+                    int(config.get('batch_size')),
+                    float(config.get('decay')),
+                    int(config.get('epochs')),
+                    float(config.get('learning_rate')),
+                    config.get('loss'),
+                    float(config.get('momentum')),
+                    config.get('optimizer'),
+                    float(fit) if fit else fit,
+                    len(history['val_acc']),
                     history['acc'][best_index],
-                    history['loss'][best_index]
+                    history['loss'][best_index],
+                    history['val_acc'][best_index],
+                    history['val_loss'][best_index]
                 ]
                 data.append(row)
 
-    return pandas.DataFrame(data, columns=['batch_size', 'decay', 'epochs', 'learning_rate', 'loss', 'momentum',
-                                           'optimizer', 'second_fit_lr_fraction', 'best_train_acc',
-                                           'best_train_loss', 'best_val_acc', 'best_val_loss'])
+    return pandas.DataFrame(data,
+                            columns=['index', 'batch_size', 'decay', 'max_epochs', 'learning_rate', 'loss', 'momentum',
+                                     'optimizer', 'second_fit_lr_fraction', 'epochs', 'best_train_acc',
+                                     'best_train_loss', 'best_val_acc', 'best_val_loss'])
 
 
 def parse_args():
@@ -47,13 +51,10 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
+if __name__ == '__main__':
     args = parse_args()
     df = load_dataframe(args.output_dir)
     pandas.set_option('display.max_columns', 500)
     pandas.set_option('display.width', 200)
-    print(df)
-
-
-if __name__ == '__main__':
-    main()
+    print(df[(df['best_val_acc'] > 0.90) & (df['second_fit_lr_fraction'].isnull())])
+    print(df[(df['best_val_acc'] > 0.90) & (df['second_fit_lr_fraction'].notnull())])
