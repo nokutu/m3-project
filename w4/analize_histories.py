@@ -20,24 +20,24 @@ def load_dataframe(output_dir):
                 best_index = history['val_acc'].index(max(history['val_acc']))
 
                 row = [
-                    config['batch_size'],
-                    config['decay'],
-                    config['epochs'],
-                    config['learning_rate'],
-                    config['loss'],
-                    config['momentum'],
-                    config['optimizer'],
-                    config['second_fit_lr_fraction'],
-                    history['val_acc'][best_index],
-                    history['val_loss'][best_index],
+                    config.get('batch_size'),
+                    config.get('decay'),
+                    config.get('epochs'),
+                    config.get('learning_rate'),
+                    config.get('loss'),
+                    config.get('momentum'),
+                    config.get('optimizer'),
+                    config.get('second_fit_lr_fraction'),
                     history['acc'][best_index],
-                    history['loss'][best_index]
+                    history['loss'][best_index],
+                    history['val_acc'][best_index],
+                    history['val_loss'][best_index]
                 ]
                 data.append(row)
 
     return pandas.DataFrame(data, columns=['batch_size', 'decay', 'epochs', 'learning_rate', 'loss', 'momentum',
-                                                'optimizer', 'second_fit_lr_fraction', 'best_train_acc',
-                                                'best_train_loss', 'best_val_acc', 'best_val_loss'])
+                                           'optimizer', 'second_fit_lr_fraction', 'best_train_acc',
+                                           'best_train_loss', 'best_val_acc', 'best_val_loss'])
 
 
 def parse_args():
@@ -52,7 +52,7 @@ def main():
     df = load_dataframe(args.output_dir)
     pandas.set_option('display.max_columns', 500)
     pandas.set_option('display.width', 200)
-    print(df)
+    print(df[df['best_val_acc'] > 0.90])
 
 
 if __name__ == '__main__':
