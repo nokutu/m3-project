@@ -20,6 +20,7 @@ def load_dataframe(output_dir):
                 best_index = history['val_acc'].index(max(history['val_acc']))
 
                 row = [
+                    config.get('index'),
                     config.get('batch_size'),
                     config.get('decay'),
                     config.get('epochs'),
@@ -28,6 +29,7 @@ def load_dataframe(output_dir):
                     config.get('momentum'),
                     config.get('optimizer'),
                     config.get('second_fit_lr_fraction'),
+                    len(history['val_acc']),
                     history['acc'][best_index],
                     history['loss'][best_index],
                     history['val_acc'][best_index],
@@ -35,8 +37,8 @@ def load_dataframe(output_dir):
                 ]
                 data.append(row)
 
-    return pandas.DataFrame(data, columns=['batch_size', 'decay', 'epochs', 'learning_rate', 'loss', 'momentum',
-                                           'optimizer', 'second_fit_lr_fraction', 'best_train_acc',
+    return pandas.DataFrame(data, columns=['index', 'batch_size', 'decay', 'epochs', 'learning_rate', 'loss', 'momentum',
+                                           'optimizer', 'second_fit_lr_fraction', 'epochs', 'best_train_acc',
                                            'best_train_loss', 'best_val_acc', 'best_val_loss'])
 
 
@@ -52,4 +54,5 @@ if __name__ == '__main__':
     df = load_dataframe(args.output_dir)
     pandas.set_option('display.max_columns', 500)
     pandas.set_option('display.width', 200)
-    print(df)
+    print(df[(df['best_val_acc'] > 0.90) & (df['second_fit_lr_fraction'].isnull())])
+    print(df[(df['best_val_acc'] > 0.90) & (df['second_fit_lr_fraction'].notnull())])
