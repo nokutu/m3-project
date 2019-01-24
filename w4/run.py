@@ -15,7 +15,7 @@ def parse_args():
     parser.add_argument('-o', '--output_dir', type=str, default='/home/grupo06/work')
     parser.add_argument('-l', '--log_dir', type=str, default='/home/grupo06/logs/tensorboard')
     parser.add_argument('-b', '--batch_size', type=int, default=32)
-    parser.add_argument('-e', '--epochs', type=int, default=120)
+    parser.add_argument('-e', '--epochs', type=int, default=250)
     parser.add_argument('-p', '--patience', type=int, default=5)
     parser.add_argument('-x', '--extend', action='store_true', default=False)
     return parser.parse_args()

@@ -21,6 +21,7 @@ def get_config(args: argparse.Namespace):
         'learning_rate': np.random.choice(learning_rates),
         'momentum': np.random.choice(momenta),
         'decay': np.random.choice(decays),
-        'second_fit_lr_fraction': np.random.choice(second_fit_lr_fractions)
+        'second_fit_lr_fraction': np.random.choice(second_fit_lr_fractions),
+        'index': args.index
     }
     return config
