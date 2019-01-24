@@ -36,8 +36,8 @@ def load_dataframe(output_dir):
                 data.append(row)
 
     return pandas.DataFrame(data, columns=['batch_size', 'decay', 'epochs', 'learning_rate', 'loss', 'momentum',
-                                                'optimizer', 'second_fit_lr_fraction', 'best_train_acc',
-                                                'best_train_loss', 'best_val_acc', 'best_val_loss'])
+                                           'optimizer', 'second_fit_lr_fraction', 'best_train_acc',
+                                           'best_train_loss', 'best_val_acc', 'best_val_loss'])
 
 
 def parse_args():

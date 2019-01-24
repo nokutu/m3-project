@@ -17,7 +17,7 @@ def parse_args():
     parser.add_argument('-b', '--batch_size', type=int, default=32)
     parser.add_argument('-e', '--epochs', type=int, default=120)
     parser.add_argument('-p', '--patience', type=int, default=5)
-    parser.add_argument('-x', '--extend', action='store_true', default=False)
+    parser.add_argument('-tf', '--train-full', action='store_true', default=False)
     return parser.parse_args()
 
 
@@ -51,20 +51,23 @@ def main():
     es_callback = callbacks.EarlyStopping(monitor='val_acc', min_delta=0, patience=args.patience, verbose=0,
                                           mode='auto', baseline=None, restore_best_weights=True)
 
-    history = model.fit_generator(
-        train_generator,
-        steps_per_epoch=train_generator.samples // train_generator.batch_size,
-        epochs=config['epochs'],
-        verbose=2,
-        callbacks=[tb_callback, es_callback],
-        validation_data=validation_generator,
-        validation_steps=validation_generator.samples // validation_generator.batch_size,
-        workers=4)
+    last_epoch = 0
 
-    # this is a small hack: https://github.com/keras-team/keras/issues/1766
-    last_epoch = len(history.history['loss'])
+    if not args.train_full:
+        history = model.fit_generator(
+            train_generator,
+            steps_per_epoch=train_generator.samples // train_generator.batch_size,
+            epochs=config['epochs'],
+            verbose=2,
+            callbacks=[tb_callback, es_callback],
+            validation_data=validation_generator,
+            validation_steps=validation_generator.samples // validation_generator.batch_size,
+            workers=4)
 
-    print('\nFine-tuning top layers done. Training full network now...\n')
+        # this is a small hack: https://github.com/keras-team/keras/issues/1766
+        last_epoch = len(history.history['loss'])
+
+        print('\nFine-tuning top layers done. Training full network now...\n')
 
     for layer in model.layers:
         layer.trainable = True
