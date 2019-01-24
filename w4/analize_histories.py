@@ -20,14 +20,14 @@ def load_dataframe(output_dir):
                 best_index = history['val_acc'].index(max(history['val_acc']))
 
                 row = [
-                    config['batch_size'],
-                    config['decay'],
-                    config['epochs'],
-                    config['learning_rate'],
-                    config['loss'],
-                    config['momentum'],
-                    config['optimizer'],
-                    config['second_fit_lr_fraction'],
+                    config.get('batch_size'),
+                    config.get('decay'),
+                    config.get('epochs'),
+                    config.get('learning_rate'),
+                    config.get('loss'),
+                    config.get('momentum'),
+                    config.get('optimizer'),
+                    config.get('second_fit_lr_fraction'),
                     history['acc'][best_index],
                     history['loss'][best_index],
                     history['val_acc'][best_index],
