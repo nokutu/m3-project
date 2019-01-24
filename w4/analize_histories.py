@@ -12,9 +12,10 @@ def load_best_history(output_dir):
             print('Loading training history from {}...'.format(file))
             with open(os.path.join(output_dir, file), 'rb') as pickle_file:
                 history = pickle.load(pickle_file)
+                max_val_acc = max(history['val_acc'])
 
-                if history['val_acc'][-1] > best_acc:
-                    best_acc = history['val_acc'][-1]
+                if max_val_acc > best_acc:
+                    best_acc = max_val_acc
                     best_history = history
                     best_file = file
     return best_history, best_file, best_acc
