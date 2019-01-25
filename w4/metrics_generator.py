@@ -41,7 +41,7 @@ def main():
     save_accuracy(history, args.model_file.replace('nasnet', 'accuracy').replace('.h5', '.png'))
     save_loss(history, args.model_file.replace('nasnet', 'loss').replace('.h5', '.png'))
 
-    validation_generator = get_validation_generator(args.dataset_dir, args.batch_size, False)
+    validation_generator = get_validation_generator(args.dataset_dir, args.batch_size, shuffle=False)
     y_pred = model.predict_generator(
         validation_generator,
         steps=(validation_generator.samples // validation_generator.batch_size) + 1

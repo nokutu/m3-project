@@ -6,7 +6,7 @@ from matplotlib import pyplot as plt
 
 
 def save_confusion_matrix(y_true, y_pred, classes, output_file: str):
-    cm = confusion_matrix(y_true, y_pred, labels=classes)
+    cm = confusion_matrix(y_true, y_pred)
     cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
 
     plt.imshow(cm, interpolation='nearest')
