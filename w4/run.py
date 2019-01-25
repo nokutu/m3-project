@@ -53,6 +53,7 @@ def main():
 
     last_epoch = 0
 
+    history = None
     if not args.train_full:
         history = model.fit_generator(
             train_generator,
@@ -96,9 +97,11 @@ def main():
     model.save(model_file)
     print('Model saved to {}'.format(model_file))
 
-    for k in history.history.keys():
-        history.history[k].extend(history2.history[k])
-
+    if history:
+        for k in history.history.keys():
+            history.history[k].extend(history2.history[k])
+    else:
+        history = history2
     history_file = os.path.join(args.output_dir, 'history__{}.pkl'.format(config_to_str(config)))
     with open(history_file, 'wb') as f:
         pickle.dump(history.history, f)
