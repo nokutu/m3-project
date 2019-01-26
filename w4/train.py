@@ -1,11 +1,11 @@
-import argparse
 import os
+import argparse
 import pickle
 
 from keras import callbacks
 
-from model import build_model, get_optimizer
-from utils import get_train_generator, get_validation_generator, config_to_str, get_config
+from model import *
+from utils.config import get_config, config_to_str
 
 
 def parse_args():
@@ -63,7 +63,8 @@ def main():
             callbacks=[tb_callback, es_callback],
             validation_data=validation_generator,
             validation_steps=validation_generator.samples // validation_generator.batch_size,
-            workers=4)
+            workers=4
+        )
 
         # this is a small hack: https://github.com/keras-team/keras/issues/1766
         last_epoch = len(history.history['loss'])
@@ -91,7 +92,8 @@ def main():
         validation_data=validation_generator,
         validation_steps=validation_generator.samples // validation_generator.batch_size,
         workers=4,
-        initial_epoch=last_epoch)
+        initial_epoch=last_epoch
+    )
 
     model_file = os.path.join(args.output_dir, 'nasnet__{}.h5'.format(config_to_str(config)))
     model.save(model_file)

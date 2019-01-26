@@ -10,4 +10,4 @@
 #SBATCH --array=101-200
 
 source venv/bin/activate
-python m3-project/w4/run.py ${SLURM_ARRAY_TASK_ID}
+python m3-project/w4/train.py ${SLURM_ARRAY_TASK_ID}

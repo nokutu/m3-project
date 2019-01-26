@@ -4,9 +4,9 @@ import pickle
 
 from keras.engine.saving import load_model
 
-from utils import get_validation_generator
+from model import get_validation_generator
+from utils.config import str_to_config
 from utils.metrics import save_accuracy, save_loss, save_confusion_matrix
-from utils.utils import str_to_config
 
 
 def get_model_history(model_file):
