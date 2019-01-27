@@ -3,9 +3,10 @@ import argparse
 import pickle
 
 from keras import callbacks
+from keras import backend as K
 
 from model import *
-from utils.config import get_config, config_to_str
+from utils.config import get_config, get_random_config, config_to_str
 
 
 def parse_args():
@@ -31,6 +32,7 @@ def print_setup(config: dict):
 
 def main():
     args = parse_args()
+    #config = get_random_config(args)
     config = get_config(args)
     print_setup(config)
 
@@ -51,9 +53,9 @@ def main():
     es_callback = callbacks.EarlyStopping(monitor='val_acc', min_delta=0, patience=args.patience, verbose=0,
                                           mode='auto', baseline=None, restore_best_weights=True)
 
+    history = None
     last_epoch = 0
 
-    history = None
     if not args.train_full:
         history = model.fit_generator(
             train_generator,
@@ -73,15 +75,8 @@ def main():
 
     for layer in model.layers:
         layer.trainable = True
-
-    optimizer = get_optimizer(
-        optimizer=config['optimizer'],
-        lr=config['learning_rate'] * config['second_fit_lr_fraction'],
-        decay=config['decay'],
-        momentum=config['momentum']
-    )
-
-    model.compile(optimizer, model.loss, model.metrics)
+    K.set_value(model.optimizer.lr, config['learning_rate'] * config['second_fit_lr_fraction'])
+    model.compile(model.optimizer, model.loss, model.metrics)
 
     history2 = model.fit_generator(
         train_generator,

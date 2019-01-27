@@ -3,7 +3,7 @@ import argparse
 import numpy as np
 
 
-def get_config(args: argparse.Namespace):
+def get_random_config(args: argparse.Namespace):
     np.random.seed(args.index)
 
     optimizers = ['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam']
@@ -22,6 +22,21 @@ def get_config(args: argparse.Namespace):
         'momentum': np.random.choice(momenta),
         'decay': np.random.choice(decays),
         'second_fit_lr_fraction': np.random.choice(second_fit_lr_fractions),
+        'index': args.index
+    }
+    return config
+
+
+def get_config(args):
+    config = {
+        'batch_size': args.batch_size,
+        'epochs': args.epochs,
+        'optimizer': 'Adam',
+        'loss': 'categorical_crossentropy',
+        'learning_rate': 0.00005,
+        'momentum': 0.0,
+        'decay': 0.0001,
+        'second_fit_lr_fraction': 1.0,
         'index': args.index
     }
     return config

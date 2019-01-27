@@ -11,15 +11,18 @@ def build_model(optimizer: str, lr: float, decay: float, momentum: float, loss: 
         include_top=True,
         weights='imagenet',
         input_tensor=None,
-        pooling=None,
-        classes=1000)
+        pooling=None
+    )
 
     for layer in base_model.layers:
         layer.trainable = not freeze
 
     base_model.layers.pop()
-    my_dense = Dense(classes, activation='softmax', name='predictions')
-    model = Model(inputs=base_model.input, outputs=my_dense(base_model.layers[-1].output))
+    x = base_model.layers[-1].output  # shape: (None, 1056)
+    x = Dense(512, activation='relu', name='fc1')(x)
+    x = Dense(256, activation='relu', name='fc2')(x)
+    x = Dense(classes, activation='softmax', name='predictions')(x)
+    model = Model(inputs=base_model.input, outputs=x)
 
     optimizer = get_optimizer(optimizer, lr, decay, momentum)
 
