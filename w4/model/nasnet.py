@@ -1,5 +1,5 @@
 from keras import applications, Model
-from keras.layers import Dense
+from keras.layers import Dense, BatchNormalization, Activation, Dropout
 
 from .optimizer import get_optimizer
 
@@ -19,9 +19,21 @@ def build_model(optimizer: str, lr: float, decay: float, momentum: float, loss: 
 
     base_model.layers.pop()
     x = base_model.layers[-1].output  # shape: (None, 1056)
-    x = Dense(512, activation='relu', name='fc1')(x)
-    x = Dense(256, activation='relu', name='fc2')(x)
-    x = Dense(classes, activation='softmax', name='predictions')(x)
+
+    x = Dense(512, name='fc1')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Dropout(0.5)(x)
+
+    x = Dense(256, name='fc2')(x)
+    x = BatchNormalization()(x)
+    x = Activation('relu')(x)
+    x = Dropout(0.5)(x)
+
+    x = Dense(classes, name='predictions')(x)
+    x = BatchNormalization()(x)
+    x = Activation('softmax')(x)
+
     model = Model(inputs=base_model.input, outputs=x)
 
     optimizer = get_optimizer(optimizer, lr, decay, momentum)

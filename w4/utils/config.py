@@ -33,10 +33,10 @@ def get_config(args):
         'epochs': args.epochs,
         'optimizer': 'Adam',
         'loss': 'categorical_crossentropy',
-        'learning_rate': 0.00005,
+        'learning_rate': 0.0005,
         'momentum': 0.0,
-        'decay': 0.0001,
-        'second_fit_lr_fraction': 1.0,
+        'decay': 1e-6,
+        'second_fit_lr_fraction': 0.1,
         'index': args.index
     }
     return config

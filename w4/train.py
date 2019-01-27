@@ -50,7 +50,7 @@ def main():
     validation_generator = get_validation_generator(args.dataset_dir, config['batch_size'])
 
     tb_callback = callbacks.TensorBoard(log_dir=os.path.join(args.log_dir, config_to_str(config)))
-    es_callback = callbacks.EarlyStopping(monitor='val_acc', min_delta=0, patience=args.patience, verbose=0,
+    es_callback = callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=args.patience, verbose=1,
                                           mode='auto', baseline=None, restore_best_weights=True)
 
     history = None
