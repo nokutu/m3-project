@@ -40,7 +40,8 @@ def main():
         decay=config['decay'],
         momentum=config['momentum'],
         loss=config['loss'],
-        classes=8
+        classes=8,
+        use_imagenet=not args.train_full
     )
     # model.summary()
 
