@@ -1,11 +1,12 @@
-import argparse
 import os
+import argparse
 import pickle
 
 from keras import callbacks
+from keras import backend as K
 
-from model import build_model, get_optimizer
-from utils import get_train_generator, get_validation_generator, config_to_str, get_config
+from model import *
+from utils.config import get_config, get_random_config, config_to_str
 
 
 def parse_args():
@@ -31,6 +32,7 @@ def print_setup(config: dict):
 
 def main():
     args = parse_args()
+    #config = get_random_config(args)
     config = get_config(args)
     print_setup(config)
 
@@ -40,8 +42,7 @@ def main():
         decay=config['decay'],
         momentum=config['momentum'],
         loss=config['loss'],
-        classes=8,
-        use_imagenet=not args.train_full
+        classes=8
     )
     # model.summary()
 
@@ -49,12 +50,12 @@ def main():
     validation_generator = get_validation_generator(args.dataset_dir, config['batch_size'])
 
     tb_callback = callbacks.TensorBoard(log_dir=os.path.join(args.log_dir, config_to_str(config)))
-    es_callback = callbacks.EarlyStopping(monitor='val_acc', min_delta=0, patience=args.patience, verbose=0,
+    es_callback = callbacks.EarlyStopping(monitor='val_loss', min_delta=0, patience=args.patience, verbose=1,
                                           mode='auto', baseline=None, restore_best_weights=True)
 
+    history = None
     last_epoch = 0
 
-    history = None
     if not args.train_full:
         history = model.fit_generator(
             train_generator,
@@ -64,7 +65,8 @@ def main():
             callbacks=[tb_callback, es_callback],
             validation_data=validation_generator,
             validation_steps=validation_generator.samples // validation_generator.batch_size,
-            workers=4)
+            workers=4
+        )
 
         # this is a small hack: https://github.com/keras-team/keras/issues/1766
         last_epoch = len(history.history['loss'])
@@ -73,15 +75,8 @@ def main():
 
     for layer in model.layers:
         layer.trainable = True
-
-    optimizer = get_optimizer(
-        optimizer=config['optimizer'],
-        lr=config['learning_rate'] * config['second_fit_lr_fraction'],
-        decay=config['decay'],
-        momentum=config['momentum']
-    )
-
-    model.compile(optimizer, model.loss, model.metrics)
+    K.set_value(model.optimizer.lr, config['learning_rate'] * config['second_fit_lr_fraction'])
+    model.compile(model.optimizer, model.loss, model.metrics)
 
     history2 = model.fit_generator(
         train_generator,
@@ -92,7 +87,8 @@ def main():
         validation_data=validation_generator,
         validation_steps=validation_generator.samples // validation_generator.batch_size,
         workers=4,
-        initial_epoch=last_epoch)
+        initial_epoch=last_epoch
+    )
 
     model_file = os.path.join(args.output_dir, 'nasnet__{}.h5'.format(config_to_str(config)))
     model.save(model_file)

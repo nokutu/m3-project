@@ -6,8 +6,7 @@
 #SBATCH --qos masterlow
 #SBATCH --gres gpu:1
 #SBATCH --chdir /home/grupo06/
-#SBATCH --output logs/%x_%u_%A_%a.out
-#SBATCH --array=101-200
+#SBATCH --output logs/%x_%u_%j.out
 
 source venv/bin/activate
-python m3-project/w4/train.py ${SLURM_ARRAY_TASK_ID}
+python m3-project/w4/train.py ${SLURM_JOB_ID} --output_dir /home/grupo06/work/test --log_dir /home/grupo06/logs/tensorboard/test

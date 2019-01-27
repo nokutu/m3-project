@@ -10,4 +10,4 @@
 #SBATCH --array=4,1,44,132,21,80,30,127,24,29,193,170,51,166,93,198,65,122%6
 
 source venv/bin/activate
-python m3-project/w4/run.py ${SLURM_ARRAY_TASK_ID} -o /home/grupo06/work/full_network_no_imagenet -tf
+python m3-project/w4/train.py ${SLURM_ARRAY_TASK_ID} -o /home/grupo06/work/full_network_no_imagenet -tf

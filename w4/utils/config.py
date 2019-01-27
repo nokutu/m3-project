@@ -3,7 +3,7 @@ import argparse
 import numpy as np
 
 
-def get_config(args: argparse.Namespace):
+def get_random_config(args: argparse.Namespace):
     np.random.seed(args.index)
 
     optimizers = ['SGD', 'RMSprop', 'Adagrad', 'Adadelta', 'Adam', 'Adamax', 'Nadam']
@@ -25,3 +25,33 @@ def get_config(args: argparse.Namespace):
         'index': args.index
     }
     return config
+
+
+def get_config(args):
+    config = {
+        'batch_size': args.batch_size,
+        'epochs': args.epochs,
+        'optimizer': 'Adam',
+        'loss': 'categorical_crossentropy',
+        'learning_rate': 0.0005,
+        'momentum': 0.0,
+        'decay': 1e-6,
+        'second_fit_lr_fraction': 0.1,
+        'index': args.index
+    }
+    return config
+
+
+def config_to_str(config):
+    s = []
+    for k, v in sorted(config.items(), key=lambda t: t[0]):
+        s.append('{}={}'.format(k, v))
+    return '__'.join(s)
+
+
+def str_to_config(line):
+    d = {}
+    for pair in line.split('__'):
+        k, v = pair.split('=')
+        d[k] = v
+    return d
