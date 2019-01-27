@@ -10,4 +10,4 @@
 #SBATCH --array=1-100%3
 
 source venv/bin/activate
-python m3-project/w4/train.py ${SLURM_ARRAY_TASK_ID} -o /home/grupo06/work/full_dataset_2 -d /home/mcv/datasets/MIT_split
+python m3-project/w4/train.py ${SLURM_ARRAY_TASK_ID} -o /home/grupo06/work/full_dataset_2 -d /home/mcv/datasets/MIT_split -l /home/grupo06/logs/tensorboard/full_dataset_2
