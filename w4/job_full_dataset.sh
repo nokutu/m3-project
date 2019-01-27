@@ -7,7 +7,7 @@
 #SBATCH --gres gpu:1
 #SBATCH --chdir /home/grupo06/
 #SBATCH --output logs/%x_%u_%A_%a.out
-#SBATCH --array=4,1,44,132,21,80,30,127,24,29,193,170,51,166,93,198,65,122%6
+#SBATCH --array=1-100%3
 
 source venv/bin/activate
-python m3-project/w4/train.py ${SLURM_ARRAY_TASK_ID} -o /home/grupo06/work/full_dataset -d /home/mcv/datasets/MIT_split
+python m3-project/w4/train.py ${SLURM_ARRAY_TASK_ID} -o /home/grupo06/work/full_dataset_2 -d /home/mcv/datasets/MIT_split

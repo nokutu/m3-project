@@ -32,7 +32,7 @@ def print_setup(config: dict):
 
 def main():
     args = parse_args()
-    #config = get_random_config(args)
+    # config = get_random_config(args)
     config = get_config(args)
     print_setup(config)
 
