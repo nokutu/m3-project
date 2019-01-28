@@ -1,5 +1,4 @@
 import os
-from typing import Tuple
 
 from keras_preprocessing.image import ImageDataGenerator, DirectoryIterator
 
@@ -21,7 +20,7 @@ def get_train_generator(dataset_dir: str, input_size: int, batch_size: int) -> D
     return train_generator
 
 
-def get_validation_generator(dataset_dir: str, input_size: Tuple[int], batch_size: int, shuffle=True) -> DirectoryIterator:
+def get_validation_generator(dataset_dir: str, input_size: int, batch_size: int, shuffle=True) -> DirectoryIterator:
     test_datagen = ImageDataGenerator(rescale=1. / 255)
 
     validation_generator = test_datagen.flow_from_directory(
