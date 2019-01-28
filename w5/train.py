@@ -28,7 +28,7 @@ def main():
     model = build_model(args.input_size, train_generator.num_classes)
     model.summary()
 
-    early_stopping = callbacks.EarlyStopping(patience=5, verbose=1)
+    early_stopping = callbacks.EarlyStopping(patience=10, verbose=1)
     tensorboard = callbacks.TensorBoard(log_dir=os.path.join(args.log_dir, str(args.index)))
 
     history = model.fit_generator(
