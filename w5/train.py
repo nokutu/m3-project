@@ -3,7 +3,7 @@ import argparse
 
 from keras import callbacks
 
-from model import build_model
+from models.basic_model import basic_model
 from load_data import get_train_generator, get_validation_generator
 
 
@@ -25,7 +25,7 @@ def main():
     train_generator = get_train_generator(args.dataset_dir, args.input_size, args.batch_size)
     validation_generator = get_validation_generator(args.dataset_dir, args.input_size, args.batch_size)
 
-    model = build_model(args.input_size, train_generator.num_classes)
+    model = basic_model(args.input_size, train_generator.num_classes)
     model.summary()
 
     early_stopping = callbacks.EarlyStopping(patience=10, verbose=1)

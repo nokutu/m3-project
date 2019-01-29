@@ -5,7 +5,7 @@ from keras.models import Model
 from keras.optimizers import SGD
 
 
-def build_model(input_size, n_classes):
+def basic_model(input_size, n_classes):
     inputs = Input(shape=(input_size, input_size, 3))
 
     x = Conv2D(32, (3, 3))(inputs)
@@ -26,6 +26,7 @@ def build_model(input_size, n_classes):
     x = Activation('relu')(x)
     x = Dropout(0.5)(x)
     x = Dense(n_classes)(x)
+
     predictions = Activation('softmax')(x)
 
     model = Model(inputs=inputs, outputs=predictions)
