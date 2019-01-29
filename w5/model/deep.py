@@ -6,10 +6,10 @@ from keras.layers import Input
 from keras.models import Model
 from keras.optimizers import SGD
 
-from .model_interface import ModelInterface
+from .interface import ModelInterface
 
 
-class BasicModel(ModelInterface):
+class DeepModel(ModelInterface):
 
     model: Model
 
@@ -19,31 +19,30 @@ class BasicModel(ModelInterface):
     def build(self, input_size: int, n_classes: int, **kwargs) -> Model:
         inputs = Input(shape=(input_size, input_size, 3))
 
-        x = Conv2D(32, (3, 3))(inputs)
-        x = Activation('relu')(x)
+        x = Conv2D(input_size, (3, 3), activation='relu')(inputs)
+        x = Conv2D(input_size, (3, 3), activation='relu')(x)
         x = MaxPooling2D(pool_size=(2, 2))(x)
 
-        x = Conv2D(32, (3, 3))(x)
-        x = Activation('relu')(x)
+        x = Conv2D(input_size//2, (3, 3), activation='relu')(x)
+        x = Conv2D(input_size//2, (3, 3), activation='relu')(x)
+        x = Conv2D(input_size//2, (3, 3), activation='relu')(x)
         x = MaxPooling2D(pool_size=(2, 2))(x)
 
-        x = Conv2D(64, (3, 3))(x)
-        x = Activation('relu')(x)
+        x = Conv2D(input_size//4, (3, 3), activation='relu')(x)
+        x = Conv2D(input_size//4, (3, 3), activation='relu')(x)
+        x = Conv2D(input_size//4, (3, 3), activation='relu')(x)
         x = MaxPooling2D(pool_size=(2, 2))(x)
 
         x = Flatten()(x)
 
-        x = Dense(64)(x)
-        x = Activation('relu')(x)
-        x = Dropout(0.5)(x)
-        x = Dense(n_classes)(x)
+        x = Dense(64, activation='relu')(x)
 
-        predictions = Activation('softmax')(x)
+        x = Dropout(0.5)(x)
+        predictions = Dense(n_classes, activation='softmax')(x)
 
         model = Model(inputs=inputs, outputs=predictions)
 
-        sgd = SGD(lr=0.01, decay=1e-6, momentum=0.9, nesterov=True)
-        model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
+        model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
 
         self.model = model
 

@@ -6,7 +6,8 @@ from typing import Dict
 import pandas as pd
 from keras import callbacks
 
-from models import BasicModel, ModelInterface, get_train_generator, get_test_generator, DeepModel
+from model import ModelInterface, BasicModel, DeepModel
+from model.load_data import get_train_generator, get_validation_generator, get_test_generator
 
 PATIENCE = 10
 
@@ -32,7 +33,8 @@ def parse_args():
 def main():
     args = parse_args()
 
-    train_generator, validation_generator = get_train_generator(args.dataset_dir, args.input_size, args.batch_size)
+    train_generator = get_train_generator(args.dataset_dir, args.input_size, args.batch_size)
+    validation_generator = get_validation_generator(args.dataset_dir, args.input_size, args.batch_size)
     test_generator = get_test_generator(args.dataset_dir, args.input_size, args.batch_size)
 
     model_class = model_map[args.model]

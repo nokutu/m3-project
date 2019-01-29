@@ -2,10 +2,11 @@ import os
 
 from keras_preprocessing.image import ImageDataGenerator, DirectoryIterator
 
+SEED = 42
 VALIDATION_SPLIT = 0.2
 
 
-def get_train_generator(dataset_dir: str, input_size: int, batch_size: int) -> (DirectoryIterator, DirectoryIterator):
+def get_train_generator(dataset_dir: str, input_size: int, batch_size: int) -> DirectoryIterator:
     train_datagen = ImageDataGenerator(
         rescale=1. / 255,
         shear_range=0.2,
@@ -18,18 +19,26 @@ def get_train_generator(dataset_dir: str, input_size: int, batch_size: int) -> (
         target_size=(input_size, input_size),
         batch_size=batch_size,
         class_mode='categorical',
-        seed=42,
+        seed=SEED,
         subset='training')
 
-    validation_generator = train_datagen.flow_from_directory(
+    return train_generator
+
+
+def get_validation_generator(dataset_dir: str, input_size: int, batch_size: int) -> DirectoryIterator:
+    validation_datagen = ImageDataGenerator(
+        rescale=1. / 255,
+        validation_split=VALIDATION_SPLIT)
+
+    validation_generator = validation_datagen.flow_from_directory(
         directory=os.path.join(dataset_dir, 'train'),
         target_size=(input_size, input_size),
         batch_size=batch_size,
         class_mode='categorical',
-        seed=42,
+        seed=SEED,
         subset='validation')
 
-    return train_generator, validation_generator
+    return validation_generator
 
 
 def get_test_generator(dataset_dir: str, input_size: int, batch_size: int) -> DirectoryIterator:
@@ -40,7 +49,6 @@ def get_test_generator(dataset_dir: str, input_size: int, batch_size: int) -> Di
         target_size=(input_size, input_size),
         batch_size=batch_size,
         shuffle=False,
-        class_mode='categorical',
-        seed=42)
+        class_mode='categorical')
 
     return test_generator
