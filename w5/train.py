@@ -23,7 +23,7 @@ def parse_args():
     parser.add_argument('-d', '--dataset_dir', type=str, default='/home/mcv/datasets/MIT_split')
     parser.add_argument('-o', '--output_dir', type=str, default='/home/grupo06/work/w5')
     parser.add_argument('-l', '--log_dir', type=str, default='/home/grupo06/logs/tensorboard/w5')
-    parser.add_argument('-i', '--input_size', type=int, default=100)
+    parser.add_argument('-i', '--input_size', type=int, default=64)
     parser.add_argument('-b', '--batch_size', type=int, default=32)
     parser.add_argument('-e', '--epochs', type=int, default=100)
     return parser.parse_args()
@@ -62,7 +62,7 @@ def main():
     index_names = ['model', 'index']
     indices = [[args.model, args.index]]
     headers = (['amount_parameters', 'params', 'train_acc', 'train_loss', 'val_acc', 'val_loss'] +
-               list(map(lambda s: 'train_' + s, model.metrics_names)))
+               list(map(lambda s: 'test_' + s, model.metrics_names)))
     data = [[model_class.get_amount_parameters(), params, history.history['acc'][-PATIENCE],
              history.history['loss'][-PATIENCE], history.history['val_acc'][-PATIENCE],
              history.history['val_loss'][-PATIENCE]] + test_metrics]
