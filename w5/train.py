@@ -1,19 +1,18 @@
 import argparse
 import os
 import pickle
-
-import pandas as pd
 from typing import Dict
 
+import pandas as pd
 from keras import callbacks
 
-from models.load_data import get_train_generator, get_test_generator
-from models import BasicModel, ModelInterface
+from models import BasicModel, ModelInterface, get_train_generator, get_test_generator, DeepModel
 
 PATIENCE = 10
 
 model_map: Dict[str, ModelInterface] = {
-    'basic': BasicModel()
+    'basic': BasicModel(),
+    'deep': DeepModel()
 }
 
 
@@ -68,35 +67,40 @@ def main():
              history.history['loss'][-PATIENCE], history.history['val_acc'][-PATIENCE],
              history.history['val_loss'][-PATIENCE]] + test_metrics]
 
-    df = pd.DataFrame(data, columns=headers, index=pd.MultiIndex.from_tuples(indices, names=index_names))
+    results = pd.DataFrame(data, columns=headers, index=pd.MultiIndex.from_tuples(indices, names=index_names))
 
-    pickle_path = os.path.join(args.output_dir, 'results.pkl')
-    if os.path.exists(pickle_path):
-        results: pd.DataFrame = pd.read_pickle(pickle_path)
-        if df.index[0] in results.index:
-            # TODO manage duplicates
-            print('Combination already calculating, storing the best...')
-            results_row = results.loc[df.index[0]]
-            data_row = data[0]
-        else:
-            results.append(df)
-    else:
-        results = df
-    results.to_pickle(pickle_path)
+    save_files = True
+    result_file = os.path.join(args.output_dir, 'result_{}_{}.pkl'.format(args.model, args.index))
 
-    # TODO check if it must override duplicate
-    history_file = os.path.join(args.output_dir, 'history_{}_{}.pkl'.format(args.model, args.index))
-    print('Saving training history to {}...'.format(history_file))
-    with open(history_file, 'wb') as pickle_file:
-        pickle.dump(history.history, pickle_file)
+    if os.path.exists(result_file):
+        old_results: pd.DataFrame = pd.read_pickle(result_file)
+        if results.index[0] in old_results.index:
+            old_row = old_results.loc[results.index[0]]
+            new_row = results.loc[results.index[0]]
 
-    model_file = os.path.join(args.output_dir, 'model_{}_{}.h5'.format(args.model, args.index))
-    print('Saving model to {}...'.format(model_file))
-    model.save(model_file)
+            if new_row.val_acc < old_row.val_acc:
+                save_files = False
+                print('Combination already calculated. Current is worse than previous. Not replacing.')
+            else:
+                print('Combination already calculated. Current is better than previous. Replacing.')
+
+    if save_files:
+        print('Saving results to {}...'.format(result_file))
+        results.to_pickle(result_file)
+
+        history_file = os.path.join(args.output_dir, 'history_{}_{}.pkl'.format(args.model, args.index))
+        print('Saving training history to {}...'.format(history_file))
+        with open(history_file, 'wb') as pickle_file:
+            pickle.dump(history.history, pickle_file)
+
+        model_file = os.path.join(args.output_dir, 'model_{}_{}.h5'.format(args.model, args.index))
+        print('Saving model to {}...'.format(model_file))
+        model.save(model_file)
 
     pd.set_option('display.max_columns', 500)
     pd.set_option('display.max_rows', 500)
     pd.set_option('display.width', 200)
+
     print(results)
 
 

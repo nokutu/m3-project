@@ -9,7 +9,7 @@ from keras.optimizers import SGD
 from .model_interface import ModelInterface
 
 
-class BasicModel(ModelInterface):
+class DeepModel(ModelInterface):
 
     model: Model
 
@@ -21,23 +21,29 @@ class BasicModel(ModelInterface):
 
         x = Conv2D(32, (3, 3))(inputs)
         x = Activation('relu')(x)
-        x = MaxPooling2D(pool_size=(2, 2))(x)
-
         x = Conv2D(32, (3, 3))(x)
         x = Activation('relu')(x)
         x = MaxPooling2D(pool_size=(2, 2))(x)
 
-        x = Conv2D(64, (3, 3))(x)
+        x = Conv2D(16, (3, 3))(x)
+        x = Activation('relu')(x)
+        x = Conv2D(16, (3, 3))(x)
+        x = Activation('relu')(x)
+        x = MaxPooling2D(pool_size=(2, 2))(x)
+
+        x = Conv2D(8, (3, 3))(x)
+        x = Conv2D(8, (3, 3))(x)
         x = Activation('relu')(x)
         x = MaxPooling2D(pool_size=(2, 2))(x)
 
         x = Flatten()(x)
 
+        x = Dropout(0.5)(x)
         x = Dense(64)(x)
         x = Activation('relu')(x)
+
         x = Dropout(0.5)(x)
         x = Dense(n_classes)(x)
-
         predictions = Activation('softmax')(x)
 
         model = Model(inputs=inputs, outputs=predictions)
