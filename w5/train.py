@@ -7,7 +7,7 @@ from typing import Dict
 
 from keras import callbacks
 
-from load_data import get_train_generator, get_test_generator
+from models.load_data import get_train_generator, get_test_generator
 from models import BasicModel, ModelInterface
 
 PATIENCE = 10
