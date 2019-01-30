@@ -2,18 +2,19 @@ import argparse
 import os
 import pickle
 from typing import Dict
-
+import numpy as np
 import pandas as pd
 from keras import callbacks
 
-from model import ModelInterface, BasicModel, DeepModel
+from model import ModelInterface, BasicModel, DeepModel, DeepV1Model
 from model.load_data import get_train_generator, get_validation_generator, get_test_generator
 
 PATIENCE = 10
 
 model_map: Dict[str, ModelInterface] = {
     'basic': BasicModel(),
-    'deep': DeepModel()
+    'deep': DeepModel(),
+    'deep_v1': DeepV1Model()
 }
 
 
@@ -42,8 +43,8 @@ def main():
     model = model_class.build(args.input_size, train_generator.num_classes, **params)
     model.summary()
 
-    early_stopping = callbacks.EarlyStopping(patience=PATIENCE, verbose=1)
-    tensorboard = callbacks.TensorBoard(log_dir=os.path.join(args.log_dir, str(args.index)))
+    early_stopping = callbacks.EarlyStopping(monitor='val_loss', patience=PATIENCE, verbose=1)
+    tensorboard = callbacks.TensorBoard(log_dir=os.path.join(args.log_dir, str(args.index + np.random.rand())))
 
     history = model.fit_generator(
         train_generator,
@@ -65,9 +66,9 @@ def main():
     indices = [[args.model, args.index]]
     headers = (['amount_parameters', 'params', 'train_acc', 'train_loss', 'val_acc', 'val_loss'] +
                list(map(lambda s: 'test_' + s, model.metrics_names)))
-    data = [[model_class.get_amount_parameters(), params, history.history['acc'][-PATIENCE],
-             history.history['loss'][-PATIENCE], history.history['val_acc'][-PATIENCE],
-             history.history['val_loss'][-PATIENCE]] + test_metrics]
+    data = [[model_class.get_amount_parameters(), params, history.history['acc'][-PATIENCE-1],
+             history.history['loss'][-PATIENCE-1], history.history['val_acc'][-PATIENCE-1],
+             history.history['val_loss'][-PATIENCE-1]] + test_metrics]
 
     results = pd.DataFrame(data, columns=headers, index=pd.MultiIndex.from_tuples(indices, names=index_names))
 
