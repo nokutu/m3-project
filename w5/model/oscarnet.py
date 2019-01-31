@@ -24,11 +24,7 @@ def OscarNet(input_size: int, n_classes: int):
     x = conv2d_bn(x, 128, 3)
     x = layers.MaxPooling2D(2)(x)
 
-    x = layers.Flatten()(x)
-    x = layers.Dense(1024)(x)
-    x = layers.Activation('relu')(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Dropout(0.5)(x)
+    x = layers.GlobalAveragePooling2D()(x)
 
     predictions = layers.Dense(n_classes, activation='softmax')(x)
 
