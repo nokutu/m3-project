@@ -6,8 +6,6 @@ from keras import callbacks
 from model import OscarNet
 from model.load_data import get_train_generator, get_validation_generator, get_test_generator
 
-PATIENCE = 10
-
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -16,7 +14,7 @@ def parse_args():
     parser.add_argument('-o', '--output_dir', type=str, default='/home/grupo06/work/w5')
     parser.add_argument('-l', '--log_dir', type=str, default='/home/grupo06/logs/tensorboard/w5')
     parser.add_argument('-i', '--input_size', type=int, default=96)
-    parser.add_argument('-b', '--batch_size', type=int, default=128)
+    parser.add_argument('-b', '--batch_size', type=int, default=32)
     parser.add_argument('-e', '--epochs', type=int, default=100)
     return parser.parse_args()
 
@@ -31,7 +29,8 @@ def main():
     model = OscarNet(args.input_size, train_generator.num_classes)
     model.summary()
 
-    early_stopping = callbacks.EarlyStopping(patience=PATIENCE, verbose=1, restore_best_weights=True)
+    reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', patience=5)
+    early_stopping = callbacks.EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
     tensorboard = callbacks.TensorBoard(log_dir=os.path.join(args.log_dir, str(args.index)))
 
     history = model.fit_generator(
@@ -39,7 +38,7 @@ def main():
         steps_per_epoch=train_generator.samples // train_generator.batch_size,
         epochs=args.epochs,
         verbose=2,
-        callbacks=[early_stopping, tensorboard],
+        callbacks=[reduce_lr, early_stopping, tensorboard],
         validation_data=test_generator,
         validation_steps=test_generator.samples // test_generator.batch_size,
         workers=4

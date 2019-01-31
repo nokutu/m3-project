@@ -34,7 +34,7 @@ def OscarNet(input_size: int, n_classes: int):
 
     model = models.Model(inputs=inputs, outputs=predictions)
 
-    opt = optimizers.SGD(lr=0.01, decay=5e-4, momentum=0.9, nesterov=True)
+    opt = optimizers.Adam()
     model.compile(optimizer=opt, loss='categorical_crossentropy', metrics=['accuracy'])
 
     return model
