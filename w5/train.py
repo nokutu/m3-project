@@ -5,6 +5,7 @@ from typing import Dict
 
 import pandas as pd
 from keras import callbacks
+from keras.utils import plot_model
 
 from model import ModelInterface, DeepV1Model, JorgeNet
 from model import OscarNet
@@ -36,13 +37,14 @@ def main():
     args = parse_args()
 
     train_generator, validation_generator = get_train_generator(args.dataset_dir, args.input_size, args.batch_size)
-    # validation_generator = get_validation_generator(args.dataset_dir, args.input_size, args.batch_size)
+    validation_generator = get_validation_generator(args.dataset_dir, args.input_size, args.batch_size)
     test_generator = get_test_generator(args.dataset_dir, args.input_size, args.batch_size)
 
     model_class = model_map[args.model]
     params = model_class.generate_parameters(args.index)
     model = model_class.build(args.input_size, train_generator.num_classes, **params)
     model.summary()
+    plot_model(model)
 
     reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', patience=5)
     early_stopping = callbacks.EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
@@ -54,8 +56,8 @@ def main():
         epochs=args.epochs,
         verbose=2,
         callbacks=[reduce_lr, early_stopping, tensorboard],
-        validation_data=validation_generator,
-        validation_steps=validation_generator.samples // validation_generator.batch_size,
+        validation_data=test_generator,
+        validation_steps=test_generator.samples // test_generator.batch_size,
         workers=4
     )
 
