@@ -67,5 +67,3 @@ class DeepV1Model(ModelInterface):
     def generate_parameters(self, index) -> Dict:
         return {}
 
-    def get_amount_parameters(self) -> int:
-        return self.model.count_params()

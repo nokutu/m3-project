@@ -14,7 +14,3 @@ class ModelInterface:
     @abc.abstractmethod
     def generate_parameters(self, index) -> Dict:
         return
-
-    @abc.abstractmethod
-    def get_amount_parameters(self) -> int:
-        return

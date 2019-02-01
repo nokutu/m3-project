@@ -2,19 +2,20 @@ import argparse
 import os
 import pickle
 from typing import Dict
-import numpy as np
+
 import pandas as pd
 from keras import callbacks
 
-from model import ModelInterface, BasicModel, DeepModel, DeepV1Model
+from model import ModelInterface, DeepV1Model, JorgeNet
+from model import OscarNet
 from model.load_data import get_train_generator, get_validation_generator, get_test_generator
 
 PATIENCE = 10
 
 model_map: Dict[str, ModelInterface] = {
-    'basic': BasicModel(),
-    'deep': DeepModel(),
-    'deep_v1': DeepV1Model()
+    'deep_v1': DeepV1Model(),
+    'oscar': OscarNet(),
+    'jorge': JorgeNet()
 }
 
 
@@ -25,7 +26,7 @@ def parse_args():
     parser.add_argument('-d', '--dataset_dir', type=str, default='/home/mcv/datasets/MIT_split')
     parser.add_argument('-o', '--output_dir', type=str, default='/home/grupo06/work/w5')
     parser.add_argument('-l', '--log_dir', type=str, default='/home/grupo06/logs/tensorboard/w5')
-    parser.add_argument('-i', '--input_size', type=int, default=64)
+    parser.add_argument('-i', '--input_size', type=int, default=96)
     parser.add_argument('-b', '--batch_size', type=int, default=32)
     parser.add_argument('-e', '--epochs', type=int, default=100)
     return parser.parse_args()
@@ -34,8 +35,8 @@ def parse_args():
 def main():
     args = parse_args()
 
-    train_generator = get_train_generator(args.dataset_dir, args.input_size, args.batch_size)
-    validation_generator = get_validation_generator(args.dataset_dir, args.input_size, args.batch_size)
+    train_generator, validation_generator = get_train_generator(args.dataset_dir, args.input_size, args.batch_size)
+    # validation_generator = get_validation_generator(args.dataset_dir, args.input_size, args.batch_size)
     test_generator = get_test_generator(args.dataset_dir, args.input_size, args.batch_size)
 
     model_class = model_map[args.model]
@@ -43,15 +44,16 @@ def main():
     model = model_class.build(args.input_size, train_generator.num_classes, **params)
     model.summary()
 
-    early_stopping = callbacks.EarlyStopping(monitor='val_loss', patience=PATIENCE, verbose=1)
-    tensorboard = callbacks.TensorBoard(log_dir=os.path.join(args.log_dir, str(args.index + np.random.rand())))
+    reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', patience=5)
+    early_stopping = callbacks.EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+    tensorboard = callbacks.TensorBoard(log_dir=os.path.join(args.log_dir, str(args.index)))
 
     history = model.fit_generator(
         train_generator,
         steps_per_epoch=train_generator.samples // train_generator.batch_size,
         epochs=args.epochs,
         verbose=2,
-        callbacks=[early_stopping, tensorboard],
+        callbacks=[reduce_lr, early_stopping, tensorboard],
         validation_data=validation_generator,
         validation_steps=validation_generator.samples // validation_generator.batch_size,
         workers=4
@@ -59,16 +61,18 @@ def main():
 
     test_metrics = model.evaluate_generator(
         test_generator,
-        steps=(test_generator.samples // test_generator.batch_size) + 1
+        steps=(test_generator.samples // test_generator.batch_size) + 1,
+        verbose=1,
+        workers=4
     )
 
     index_names = ['model', 'index']
     indices = [[args.model, args.index]]
     headers = (['amount_parameters', 'params', 'train_acc', 'train_loss', 'val_acc', 'val_loss'] +
                list(map(lambda s: 'test_' + s, model.metrics_names)))
-    data = [[model_class.get_amount_parameters(), params, history.history['acc'][-PATIENCE-1],
-             history.history['loss'][-PATIENCE-1], history.history['val_acc'][-PATIENCE-1],
-             history.history['val_loss'][-PATIENCE-1]] + test_metrics]
+    data = [[model.count_params(), params, history.history['acc'][-PATIENCE],
+             history.history['loss'][-PATIENCE], history.history['val_acc'][-PATIENCE],
+             history.history['val_loss'][-PATIENCE]] + test_metrics]
 
     results = pd.DataFrame(data, columns=headers, index=pd.MultiIndex.from_tuples(indices, names=index_names))
 
