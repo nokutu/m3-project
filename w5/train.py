@@ -13,7 +13,7 @@ def parse_args():
     parser.add_argument('-d', '--dataset_dir', type=str, default='/home/mcv/datasets/MIT_split')
     parser.add_argument('-o', '--output_dir', type=str, default='/home/grupo06/work/w5')
     parser.add_argument('-l', '--log_dir', type=str, default='/home/grupo06/logs/tensorboard/w5')
-    parser.add_argument('-i', '--input_size', type=int, default=192)
+    parser.add_argument('-i', '--input_size', type=int, default=96)
     parser.add_argument('-b', '--batch_size', type=int, default=32)
     parser.add_argument('-e', '--epochs', type=int, default=100)
     return parser.parse_args()

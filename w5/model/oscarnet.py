@@ -16,7 +16,7 @@ def conv2d_bn(filters, kernel_size, padding='same', strides=1):
     return f
 
 
-def OscarNet(input_size: int, n_classes: int, initial_filters=32, repetitions=(2, 4, 2)):
+def OscarNet(input_size: int, n_classes: int, initial_filters=32, repetitions=(2, 2, 3)):
     inputs = layers.Input(shape=(input_size, input_size, 3))
 
     x = conv2d_bn(initial_filters, kernel_size=3)(inputs)
