@@ -2,7 +2,3 @@ from .shallow import ShallowNet
 from .deep import DeepNet
 from .baseline import BaselineNet
 from .oscarnet import OscarNet
-
-from .load_data import get_test_generator
-from .load_data import get_validation_generator
-from .load_data import get_train_generator

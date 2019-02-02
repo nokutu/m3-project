@@ -1,10 +1,11 @@
 import argparse
 import os
 
+import numpy as np
 from keras import callbacks
 
 from model import OscarNet
-from model.load_data import get_train_generator, get_test_generator
+from utils.load_data import get_train_validation_generator, get_test_generator
 
 
 def parse_args():
@@ -13,7 +14,7 @@ def parse_args():
     parser.add_argument('-d', '--dataset_dir', type=str, default='/home/mcv/datasets/MIT_split')
     parser.add_argument('-o', '--output_dir', type=str, default='/home/grupo06/work/w5')
     parser.add_argument('-l', '--log_dir', type=str, default='/home/grupo06/logs/tensorboard/w5')
-    parser.add_argument('-i', '--input_size', type=int, default=96)
+    parser.add_argument('-i', '--input_size', type=int, default=128)
     parser.add_argument('-b', '--batch_size', type=int, default=32)
     parser.add_argument('-e', '--epochs', type=int, default=100)
     return parser.parse_args()
@@ -22,10 +23,11 @@ def parse_args():
 def main():
     args = parse_args()
 
-    train_generator = get_train_generator(args.dataset_dir, args.input_size, args.batch_size)
+    train_generator, _ = get_train_validation_generator(args.dataset_dir, args.input_size, args.batch_size)
     test_generator = get_test_generator(args.dataset_dir, args.input_size, args.batch_size)
 
-    model = OscarNet(args.input_size, train_generator.num_classes)
+    num_classes = len(np.unique(train_generator.y, axis=0))
+    model = OscarNet(args.input_size, num_classes)
     model.summary()
 
     reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', patience=5)
@@ -34,18 +36,18 @@ def main():
 
     history = model.fit_generator(
         train_generator,
-        steps_per_epoch=train_generator.samples // train_generator.batch_size,
+        steps_per_epoch=train_generator.n // train_generator.batch_size,
         epochs=args.epochs,
         verbose=2,
         callbacks=[reduce_lr, early_stopping, tensorboard],
         validation_data=test_generator,
-        validation_steps=test_generator.samples // test_generator.batch_size,
+        validation_steps=test_generator.n // test_generator.batch_size,
         workers=4
     )
 
     test_metrics = model.evaluate_generator(
         test_generator,
-        steps=(test_generator.samples // test_generator.batch_size) + 1,
+        steps=(test_generator.n // test_generator.batch_size) + 1,
         verbose=1,
         workers=4
     )
