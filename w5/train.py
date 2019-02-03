@@ -6,6 +6,7 @@ from keras import callbacks
 
 from model import OscarNet
 from utils.load_data import get_train_validation_generator, get_test_generator
+from utils.metrics import save_accuracy, save_loss, save_confusion_matrix
 
 
 def parse_args():
@@ -54,6 +55,21 @@ def main():
 
     for metric, value in zip(model.metrics_names, test_metrics):
         print('{}: {}'.format(metric, value))
+
+    save_plots = False
+    if save_plots:
+        save_accuracy(history.history, os.path.join(args.output_dir, 'acc_{}.png'.format(args.index)))
+        save_loss(history.history, os.path.join(args.output_dir, 'loss_{}.png'.format(args.index)))
+        y_pred = model.predict_generator(
+            test_generator,
+            steps=(test_generator.n // test_generator.batch_size) + 1
+        )
+        y_true = np.argmax(test_generator.y, axis=1)
+        y_pred = np.argmax(y_pred, axis=1)
+        save_confusion_matrix(
+            y_true, y_pred,
+            ['coast', 'forest', 'highway', 'inside_city', 'mountain', 'Opencountry', 'street', 'tallbuilding'],
+            os.path.join(args.output_dir, 'confusion_{}.png'.format(args.index)))
 
 
 if __name__ == '__main__':
